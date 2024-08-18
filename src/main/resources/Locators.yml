@@ -1,0 +1,30 @@
+Login Page:
+  Login_button:
+    Type: Role
+    AriaRoleType: button
+    Value: Log In
+    ExactMatch: true
+
+  UserName_InputBox:
+    Type: Role
+    AriaRoleType: TEXTBOX
+    Value: Username
+    ExactMatch: false
+
+  Password_InputBox:
+    Type: Role
+    AriaRoleType: TEXTBOX
+    Value: Password
+    ExactMatch: true
+
+  Remember_me_checkbox:
+    Type: Text
+    Value: Remember me
+    ExactMatch: false
+
+  Forgot_Password:
+    Type: Text
+    Value: Forgot Your Password?
+    ExactMatch: false
+
+

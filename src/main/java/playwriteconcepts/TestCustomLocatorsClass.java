@@ -1,34 +1,34 @@
-package playwritesessions;
+package playwriteconcepts;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
-import org.srg.custompw.LocateElementFromPage;
 import org.testng.Assert;
 import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
+import srg.playwright.custom.LocateElementFromPage;
 
 @Test
 public class TestCustomLocatorsClass {
     Page page;
-    Setup setup;
+    PlaywrightSetup playwrightSetup;
     LocateElementFromPage locator = null;
 
     @BeforeTest
-    void openBrowser() throws InterruptedException, JsonProcessingException {
-        setup = new Setup();
-        page = setup.startBrowser().newPage();
+    void openBrowser() throws JsonProcessingException {
+        playwrightSetup = new PlaywrightSetup();
+        page = playwrightSetup.getNewBrowserContextFromNewBrowser().newPage();
         locator = new LocateElementFromPage(page);
     }
 
     @AfterTest
     void closeBrowser() throws InterruptedException {
-        setup.stopPlaywright();
+        playwrightSetup.stopPlaywright();
     }
 
     @Test
-    void testOne() {
+    void testOne() throws Exception {
         page.navigate("https://login.salesforce.com/");
         Locator username = locator.locateElementByRole("Login Page", "UserName_InputBox");
         Assert.assertNotNull(username);
@@ -42,7 +42,7 @@ public class TestCustomLocatorsClass {
     }
 
     @Test
-    void testTwo() {
+    void testTwo() throws Exception {
         page.navigate("https://login.salesforce.com/");
         Locator username = locator.locateElementByRole("Login Page", "UserName_InputBox");
         Assert.assertNotNull(username);
@@ -50,7 +50,7 @@ public class TestCustomLocatorsClass {
         Locator password = locator.locateElementByRole("Login Page", "Password_InputBox");
         Assert.assertNotNull(password);
         password.fill("Admin@760");
-        Locator loginBtn = locator.locateElementByRole("Login Page", "Login_button",new Page.GetByRoleOptions().setExact(false));
+        Locator loginBtn = locator.locateElementByRole("Login Page", "Login_button");
         Assert.assertNotNull(loginBtn);
         loginBtn.click();
     }

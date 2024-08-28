@@ -1,4 +1,4 @@
-package org.srg.custompw;
+package srg.util;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -9,10 +9,12 @@ import com.google.gson.JsonParser;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
 
 public class ResourceHandler {
 
-    static JsonObject convertYamlToJsonObject(String fileName) throws JsonProcessingException {
+    public static JsonObject convertYamlToJsonObject(String fileName) throws JsonProcessingException {
         ObjectMapper yamlReader = new ObjectMapper(new YAMLFactory());
         ObjectMapper jsonWriter = new ObjectMapper();
         File yamlFile = new File("src/main/resources/" + fileName);
@@ -29,5 +31,16 @@ public class ResourceHandler {
             e.printStackTrace();
         }
         return jsonObject;
+    }
+
+    public static Properties getPropertiesFile(String fileName) throws IOException {
+        Properties properties = new Properties();
+        try (InputStream input = ResourceHandler.class.getClassLoader().getResourceAsStream(fileName);) {
+            // Load the properties file
+            properties.load(input);
+        } catch (IOException ex) {
+            throw ex;
+        }
+        return properties;
     }
 }

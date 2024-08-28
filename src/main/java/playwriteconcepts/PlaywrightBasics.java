@@ -1,4 +1,4 @@
-package playwritesessions;
+package playwriteconcepts;
 
 import com.microsoft.playwright.Browser;
 import com.microsoft.playwright.BrowserType;
@@ -7,12 +7,10 @@ import com.microsoft.playwright.Playwright;
 
 public class PlaywrightBasics {
     public static void main(String[] args) {
-        String browserName = System.getProperty("BROWSER")==null?"chromium":System.getProperty("BROWSER");
-        String headlessMode = System.getProperty("HeadlessMode")==null?"false":System.getProperty("HeadlessMode");
-        String channel = System.getProperty("Channel")==null?"chrome":System.getProperty("Channel"); // can be chrome, msedge, chrome-beta, msedge-beta, msedge-dev
+        String browserName = "chromium";
         BrowserType.LaunchOptions launchOptions = new BrowserType.LaunchOptions();
-        launchOptions.setHeadless(Boolean.parseBoolean(headlessMode));
-        launchOptions.setChannel(channel);
+        launchOptions.setHeadless(false);
+        launchOptions.setChannel("chrome");
         try (Playwright playwright = Playwright.create()) {
             Browser browser = null;
             if (browserName.equals("chromium")) {
@@ -22,7 +20,7 @@ public class PlaywrightBasics {
             } else if (browserName.equals("webkit")) {
                 browser = playwright.webkit().launch(launchOptions);
             }
-            Page page = browser.newPage(); // open a new page
+            Page page = browser.newContext(new Browser.NewContextOptions().setViewportSize(1463,691)).newPage(); // open a new page
             page.navigate("https://testautomationpractice.blogspot.com/");
             String title = page.title();
             String url = page.url();

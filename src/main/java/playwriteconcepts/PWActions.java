@@ -1,4 +1,4 @@
-package playwritesessions;
+package playwriteconcepts;
 
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
@@ -12,17 +12,17 @@ import org.testng.annotations.Test;
 public class PWActions {
 
     Page page;
-    Setup setup;
+    PlaywrightSetup playwrightSetup;
 
     @BeforeTest
     void openBrowser() throws InterruptedException {
-        setup = new Setup();
-        page = setup.startBrowser().newPage();
+        playwrightSetup = new PlaywrightSetup();
+        page = playwrightSetup.getNewBrowserContextFromNewBrowser().newPage();
     }
 
     @AfterTest
     void closeBrowser() throws InterruptedException {
-        setup.stopPlaywright();
+        playwrightSetup.stopPlaywright();
     }
 
     @Test

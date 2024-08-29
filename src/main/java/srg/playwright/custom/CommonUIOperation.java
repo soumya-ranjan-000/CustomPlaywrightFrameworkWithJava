@@ -1,24 +1,21 @@
 package srg.playwright.custom;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.microsoft.playwright.Page;
+import lombok.Getter;
+import lombok.Setter;
 import srg.CucumberRunner;
 
-public class CommonUIOperation {
-    private Page page;
-    private LocateElementFromPage locateElementFromPage;
+import java.io.IOException;
 
-    public CommonUIOperation() throws JsonProcessingException {
+public class CommonUIOperation {
+    private final LocateElementFromPage locateElementFromPage;
+    @Setter
+    @Getter
+    private Page page;
+
+    public CommonUIOperation() throws IOException {
         this.setPage(CucumberRunner.testRunner.get().getPage());
         locateElementFromPage = new LocateElementFromPage(this.page);
-    }
-
-    public void setPage(Page page){
-        this.page = page;
-    }
-
-    public Page getPage(){
-        return this.page;
     }
 
     public LocateElementFromPage getElementLocatorForPage() {

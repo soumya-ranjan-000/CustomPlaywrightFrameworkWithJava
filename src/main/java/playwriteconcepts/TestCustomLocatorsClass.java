@@ -1,6 +1,5 @@
 package playwriteconcepts;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import org.testng.Assert;
@@ -9,6 +8,8 @@ import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 import srg.playwright.custom.LocateElementFromPage;
 
+import java.io.IOException;
+
 @Test
 public class TestCustomLocatorsClass {
     Page page;
@@ -16,14 +17,14 @@ public class TestCustomLocatorsClass {
     LocateElementFromPage locator = null;
 
     @BeforeTest
-    void openBrowser() throws JsonProcessingException {
+    void openBrowser() throws IOException {
         playwrightSetup = new PlaywrightSetup();
         page = playwrightSetup.getNewBrowserContextFromNewBrowser().newPage();
         locator = new LocateElementFromPage(page);
     }
 
     @AfterTest
-    void closeBrowser() throws InterruptedException {
+    void closeBrowser() {
         playwrightSetup.stopPlaywright();
     }
 

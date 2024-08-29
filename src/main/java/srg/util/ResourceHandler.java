@@ -6,49 +6,63 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
+import srg.CucumberRunner;
+import srg.extentreports.ExtentTestLogger;
+import srg.playwright.custom.LocateElementFromPage;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 
 public class ResourceHandler {
+    private static final Logger logger = LoggerFactory.getLogger(LocateElementFromPage.class);
+    static ExtentTestLogger reportLogger = new ExtentTestLogger(CucumberRunner.testRunner.get().getExtentLogger());
 
-    public static JsonObject convertYamlToJsonObject(String fileName) throws JsonProcessingException {
+    public static JsonObject convertYamlToJsonObject(String fileName) throws IOException {
         ObjectMapper yamlReader = new ObjectMapper(new YAMLFactory());
         ObjectMapper jsonWriter = new ObjectMapper();
         File yamlFile = new File("src/main/resources/" + fileName);
-        JsonObject jsonObject = null;
+        JsonObject jsonObject;
         try {
             // Read YAML file into JsonNode
             JsonNode yamlNode = yamlReader.readTree(yamlFile);
-
             // Convert JsonNode to JSON string
             String jsonString = jsonWriter.writerWithDefaultPrettyPrinter().writeValueAsString(yamlNode);
-
             jsonObject = JsonParser.parseString(jsonString).getAsJsonObject();
+        } catch (JsonProcessingException f) {
+            logger.error("Not able to convert from YML to JSON. File Name: {}", fileName, f);
+            reportLogger.failLog("Not able to convert from YML to JSON. File Name: " + fileName, f);
+            throw f;
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("YML file not found. File Name: {}", fileName, e);
+            reportLogger.failLog("YML file not found. File Name: " + fileName, e);
+            throw e;
         }
         return jsonObject;
     }
 
     public static Properties getPropertiesFile(String fileName) throws IOException {
         Properties properties = new Properties();
-        try (InputStream input = ResourceHandler.class.getClassLoader().getResourceAsStream(fileName);) {
+        try (InputStream input = ResourceHandler.class.getClassLoader().getResourceAsStream(fileName)) {
             // Load the properties file
             properties.load(input);
         } catch (IOException ex) {
+            logger.error("Not able to read properties file. Name: {}", fileName, ex);
+            reportLogger.failLog("Not able to read properties file. Name: " + fileName, ex);
             throw ex;
         }
         return properties;
     }
 
     public static String getYmlFilePath(String fileName) {
-        return ResourceHandler.class.getClassLoader().getResource(fileName).getPath();
+        return Objects.requireNonNull(ResourceHandler.class.getClassLoader().getResource(fileName)).getPath();
     }
 
     public static Map<String, Object> convertYamlFileToMap(File yamlFile, Map<String, Object> map) {
@@ -58,6 +72,8 @@ public class ResourceHandler {
             Map<String, Object> config = yaml.load(inputStream);
             map.putAll(config);
         } catch (Exception e) {
+            logger.error("Not able to convert yml file to Map. Name: {}", yamlFile, e);
+            reportLogger.failLog("Not able to convert yml file to Map. Name: " + yamlFile, e);
             throw new RuntimeException(String.format("Malformed " + yamlFile.getName() + " file - %s.", e));
         }
         return map;

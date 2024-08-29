@@ -125,8 +125,10 @@ public class BrowserFactory {
     BrowserType.LaunchOptions getLaunchOptions() {
         BrowserType.LaunchOptions launchOptions = new BrowserType.LaunchOptions();
         launchOptions.setHeadless(this.headless);
-        launchOptions.setChannel(this.channel);
-        launchOptions.setChromiumSandbox(this.isChromiumSandbox);
+        if (this.browserType.name().equals("chromium")) {
+            launchOptions.setChannel(this.channel);
+            launchOptions.setChromiumSandbox(this.isChromiumSandbox);
+        }
         launchOptions.setSlowMo(this.slowMo);
         launchOptions.setTimeout(this.timeOut);
         launchOptions.setDownloadsPath(Path.of(this.downloadsPath));

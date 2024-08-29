@@ -20,8 +20,8 @@ import java.util.Properties;
 public class StartTest {
     private CommonUIOperation operation;
     private HashMap<String, String> mainData;
-    private static ArrayList<String> allFeatureFileNames = new ArrayList<>();
-    private static HashMap<String, ExtentReports> allExtentReports = new HashMap<>();
+    private final ArrayList<String> allFeatureFileNames = new ArrayList<>();
+    private final HashMap<String, ExtentReports> allExtentReports = new HashMap<>();
     private static boolean testsFailed = false;
     private DataTable testData;
     private String team;
@@ -42,18 +42,17 @@ public class StartTest {
     private ExtentTest extentLogger;
     private Page page;
     private Playwright playwrightServer;
-    private Properties browserProperties;
+    private Properties playwrightProperties;
     private Properties pageProperties;
     private BrowserType browserType;
     private BrowserContext browserContext;
 
-
-    public void setBrowserProperties(String fileName) throws IOException {
-        this.browserProperties = ResourceHandler.getPropertiesFile(fileName);
+    public Properties getPlaywrightProperties() {
+        return this.playwrightProperties;
     }
 
-    public Properties getBrowserProperties() {
-        return this.browserProperties;
+    public void setPlaywrightProperties(String fileName) throws IOException {
+        this.playwrightProperties = ResourceHandler.getPropertiesFile(fileName);
     }
 
     public void setPageProperties(String fileName) throws IOException {
@@ -165,19 +164,19 @@ public class StartTest {
         this.failureLogged = failureLogged;
     }
 
-    public static void addFeatureFileName(String featureFileName) {
+    public void addFeatureFileName(String featureFileName) {
         allFeatureFileNames.add(featureFileName);
     }
 
-    public static ArrayList<String> getFeatureFileNames() {
+    public ArrayList<String> getFeatureFileNames() {
         return allFeatureFileNames;
     }
 
-    public static void addExtentReportByFeatureFileName(String featureFile) {
+    public void addExtentReportByFeatureFileName(String featureFile) {
         allExtentReports.put(featureFile, ExtentManager.createExtentReports(featureFile));
     }
 
-    public static ExtentReports getExtentReportByFeatureFileName(String featureFile) {
+    public ExtentReports getExtentReportByFeatureFileName(String featureFile) {
         return allExtentReports.get(featureFile);
     }
 
@@ -201,6 +200,7 @@ public class StartTest {
     public void setBrowserType(BrowserType browserType) {
         this.browserType = browserType;
     }
+
     public BrowserType getBrowserType() {
         return this.browserType;
     }
@@ -208,6 +208,7 @@ public class StartTest {
     public void setBrowserContext(BrowserContext newBrowserContext) {
         this.browserContext = newBrowserContext;
     }
+
     public BrowserContext getBrowserContext() {
         return this.browserContext;
     }

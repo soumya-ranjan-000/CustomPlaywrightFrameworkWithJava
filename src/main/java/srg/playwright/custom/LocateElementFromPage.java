@@ -37,33 +37,37 @@ public class LocateElementFromPage {
     }
 
     public Locator locateElementByRole(String pageName, String elementName, Page.GetByRoleOptions roleOptions) throws Exception {
-        JsonObject elementObj = this.verifyAndReturnElementFromPageObjects(pageName, elementName);
-        logger.debug(String.format("Locating Element: {Page Name: %s, Element Name: %s}", pageName, elementName));
-        logger.info("Element details: {}", elementObj.toString());
-        testManager.infoLog(String.format("<b>Locating Element:</b> <i>{Page Name: %s, Element Name: %s}</i>", pageName, elementName));
-        testManager.markUpJSONLog(Status.INFO, elementObj.toString());
-        String elementValue = elementObj.get("Value").getAsString();
-        String type = elementObj.get("Type").getAsString();
-        // Validate 'Type' and 'AriaRoleType' in one go
-        if (!"role".equalsIgnoreCase(type) || !elementObj.has("AriaRoleType")) {
-            throw new InvalidPropertiesException("Type: Role is needed for this operation. Operation name: 'locateElementByRole'");
-        }
-        String ariaRole = elementObj.get("AriaRoleType").getAsString();
-        if (isValidPattern(elementValue)) {
-            roleOptions.setName(Pattern.compile(elementValue));
-        } else {
-            roleOptions.setName(elementValue);
-        }
-
-        Locator locator = page.getByRole(AriaRole.valueOf(ariaRole.toUpperCase()), roleOptions);
-        if (locator.count() > 0) {
-            logger.debug(String.format("Successfully Located Element. Details: %s", elementObj));
-            testManager.passLog("Element Located Successfully.");
-            return locator;
-        } else {
-            logger.error(String.format("Element '%s' not found. Details: %s", elementName, elementObj));
-            testManager.failLog("Element not found!!!");
-            throw new ElementNotFoundException(String.format("Element '%s' not found. Details: %s", elementName, elementObj));
+        try {
+            JsonObject elementObj = this.verifyAndReturnElementFromPageObjects(pageName, elementName);
+            logger.debug(String.format("Locating Element: {Page Name: %s, Element Name: %s}", pageName, elementName));
+            logger.info("Element details: {}", elementObj.toString());
+            testManager.infoLog(String.format("<b>Locating Element:</b> <i>{Page Name: %s, Element Name: %s}</i>", pageName, elementName));
+            testManager.markUpJSONLog(Status.INFO, elementObj.toString());
+            String elementValue = elementObj.get("Value").getAsString();
+            String type = elementObj.get("Type").getAsString();
+            // Validate 'Type' and 'AriaRoleType' in one go
+            if (!"role".equalsIgnoreCase(type) || !elementObj.has("AriaRoleType")) {
+                throw new InvalidPropertiesException("Type: Role is needed for this operation. Operation name: 'locateElementByRole'");
+            }
+            String ariaRole = elementObj.get("AriaRoleType").getAsString();
+            if (isValidPattern(elementValue)) {
+                roleOptions.setName(Pattern.compile(elementValue));
+            } else {
+                roleOptions.setName(elementValue);
+            }
+            Locator locator = page.getByRole(AriaRole.valueOf(ariaRole.toUpperCase()), roleOptions);
+            if (locator.count() > 0) {
+                logger.debug(String.format("Successfully Located Element. Details: %s", elementObj));
+                testManager.passLog("Element Located Successfully.");
+                return locator;
+            } else {
+                logger.error(String.format("Element '%s' not found. Details: %s", elementName, elementObj));
+                throw new ElementNotFoundException(String.format("Element '%s' not found. Details: %s", elementName, elementObj));
+            }
+        } catch (Exception e) {
+            testManager.failLog("<p style=\"color: red; font-weight: bold;\">" + "Element not found." + "</p>" +
+                    "<b>Reason:</b> " + e.getMessage(), e);
+            throw e;
         }
     }
 

@@ -5,10 +5,10 @@ import com.microsoft.playwright.Page;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import org.testng.Assert;
 import srg.CucumberRunner;
 import srg.playwright.custom.CommonUIOperation;
 import srg.playwright.custom.LocateElementFromPage;
-import org.testng.Assert;
 
 public class Steps {
 
@@ -39,7 +39,8 @@ public class Steps {
     }
 
     @Then("the user should be logged in successfully")
-    public void the_user_should_be_logged_in_successfully() {
+    public void the_user_should_be_logged_in_successfully() throws InterruptedException {
+        Thread.sleep(3000L);
         System.out.println("Yeah I am able logged in.");
     }
 

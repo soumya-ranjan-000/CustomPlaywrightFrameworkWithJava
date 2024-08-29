@@ -1,0 +1,24 @@
+LT_USERNAME: rakiraja7751841655
+LT_ACCESS_KEY: oLQR2fqwguqaaZutVJr9OZXDpYgIcKKQV2MrOftxguThhcfzXK
+
+# Browsers allowed: `Chrome`, `MicrosoftEdge`, `pw-chromium`, `pw-firefox` and `pw-webkit`
+browserName: MicrosoftEdge
+browserVersion: latest
+platform: Windows 10
+build: Playwright Java Build
+name: test name
+
+
+projectName: Custom Playwright Framework With Java
+tags: regression
+buildTags: group your build tags
+resolution: 1920x1080
+network: true
+console: true
+video: true
+visual: false
+tunnel: false
+tunnelName: xyz
+geoLocation: IN
+idleTimeout: 500
+

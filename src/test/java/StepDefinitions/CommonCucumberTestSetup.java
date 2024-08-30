@@ -12,7 +12,6 @@ import srg.CucumberRunner;
 import srg.StartTest;
 import srg.exceptions.BrowserTypeNotFoundException;
 import srg.playright.base.BrowserFactory;
-import srg.playwright.custom.CommonUIOperation;
 
 import java.io.IOException;
 import java.util.Base64;
@@ -43,8 +42,9 @@ public class CommonCucumberTestSetup {
         this.extentTestLogger = myTestRunner.getExtentReportByFeatureFileName(featureFileName).createTest(scenarioName);
         myTestRunner.setScenario(scenario);
         myTestRunner.setExtentLogger(this.extentTestLogger);
-        LOGGER.info("===> Feature: '{}' <===", featureFileName);
-        LOGGER.info("===> Scenario: '{}' <===", scenarioName);
+        myTestRunner.setPageObjects();
+        LOGGER.info("===> Feature: '{}'", featureFileName);
+        LOGGER.info("===> Scenario: '{}'", scenarioName);
     }
 
     @After(order = 0)
@@ -65,13 +65,12 @@ public class CommonCucumberTestSetup {
 
     @Given("Initialize browser and setup test data")
     public void initializeBrowserAndSetupTestData() throws IOException, BrowserTypeNotFoundException {
-        BrowserFactory browserFactory = new BrowserFactory();
-        CucumberRunner.testRunner.get().setBrowser(browserFactory.startBrowserWithNewConnection());
-        CucumberRunner.testRunner.get().setBrowserContext(browserFactory.getNewBrowserContext());
-        CucumberRunner.testRunner.get().setPlaywrightServer(browserFactory.getPlaywrightServer());
-        BrowserFactory.PageFactory pageFactory = browserFactory.new PageFactory();
-        CucumberRunner.testRunner.get().setPage(pageFactory.getNewPageFromBrowserContext());
-        CucumberRunner.testRunner.get().setOperation(new CommonUIOperation());
+        var myTestRunner = CucumberRunner.testRunner.get();
+        BrowserFactory browserFactory = myTestRunner.getBrowserFactory();
+        myTestRunner.setBrowser(browserFactory.startBrowserWithNewConnection());
+        myTestRunner.setBrowserContext(browserFactory.getNewBrowserContext());
+        myTestRunner.setPlaywrightServer(browserFactory.getPlaywrightServer());
+        myTestRunner.setPage(browserFactory.getNewPage());
     }
 
 }

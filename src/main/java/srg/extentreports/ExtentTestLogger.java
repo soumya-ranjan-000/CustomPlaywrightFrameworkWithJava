@@ -18,7 +18,7 @@ public class ExtentTestLogger {
     }
 
     public void infoLog(String stepName, String details) {
-        extentTestLogger.log(Status.INFO, stepName + " ==> " + details);
+        extentTestLogger.log(Status.INFO, stepName + " [" + details + "]");
     }
 
     public void infoLog(String details) {
@@ -30,7 +30,7 @@ public class ExtentTestLogger {
     }
 
     public void warnLog(String stepName, String details) {
-        extentTestLogger.log(Status.WARNING, stepName + " ==> " + details);
+        extentTestLogger.log(Status.WARNING, stepName + " [" + details + "]");
     }
 
     public void failLog(String message, Throwable e) {
@@ -43,7 +43,7 @@ public class ExtentTestLogger {
     }
 
     public void passLog(String stepName, String details) {
-        extentTestLogger.log(Status.PASS, stepName + " ==> " + details);
+        extentTestLogger.log(Status.PASS, stepName + " [" + details + "]");
     }
 
     public void passLog(String message) {

@@ -2,6 +2,7 @@ package srg;
 
 import com.aventstack.extentreports.ExtentReports;
 import com.aventstack.extentreports.ExtentTest;
+import com.google.gson.JsonObject;
 import com.microsoft.playwright.Browser;
 import com.microsoft.playwright.BrowserContext;
 import com.microsoft.playwright.Page;
@@ -10,6 +11,7 @@ import io.cucumber.java.Scenario;
 import lombok.Getter;
 import lombok.Setter;
 import srg.extentreports.ExtentManager;
+import srg.playright.base.BrowserFactory;
 import srg.playwright.custom.CommonUIOperation;
 import srg.util.ResourceHandler;
 
@@ -51,6 +53,20 @@ public class StartTest {
     @Getter
     @Setter
     private BrowserContext browserContext;
+    @Getter
+    private BrowserFactory browserFactory;
+
+    @Getter
+    private JsonObject pageObjects;
+
+    public StartTest() {
+        this.isLoggingScreenshotEnabled = System.getProperty("loggingScreenshotEnabled") == null || Boolean.parseBoolean(System.getProperty("loggingScreenshotEnabled"));
+        this.browserFactory = new BrowserFactory();
+    }
+
+    public void setPageObjects() throws IOException {
+        pageObjects = ResourceHandler.convertYamlToJsonObject("PageObjects.yml");
+    }
 
     public void setPlaywrightProperties(String fileName) throws IOException {
         this.playwrightProperties = ResourceHandler.getPropertiesFile(fileName);
@@ -58,10 +74,6 @@ public class StartTest {
 
     public void setPageProperties(String fileName) throws IOException {
         this.pageProperties = ResourceHandler.getPropertiesFile(fileName);
-    }
-
-    public StartTest() {
-        this.isLoggingScreenshotEnabled = System.getProperty("loggingScreenshotEnabled") == null || Boolean.parseBoolean(System.getProperty("loggingScreenshotEnabled"));
     }
 
     public void addFeatureFileName(String featureFileName) {
@@ -79,4 +91,6 @@ public class StartTest {
     public ExtentReports getExtentReportByFeatureFileName(String featureFile) {
         return allExtentReports.get(featureFile);
     }
+
+
 }

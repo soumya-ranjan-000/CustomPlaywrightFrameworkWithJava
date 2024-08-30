@@ -43,10 +43,6 @@ public class BrowserFactory {
     private Browser lclBrowser;
     private BrowserContext browserContext;
 
-    public BrowserFactory() {
-        initializeBrowserProperties();
-    }
-
     void initializeBrowserProperties() {
         Properties prop = CucumberRunner.testRunner.get().getPlaywrightProperties();
         this.isCrossBrowserTestingIsEnabled = Boolean.parseBoolean(prop.getProperty("CrossBrowserTestingEnabled"));
@@ -80,6 +76,7 @@ public class BrowserFactory {
     }
 
     private Playwright startServer() {
+        this.initializeBrowserProperties();
         this.playwrightServer = Playwright.create(getPlaywrightCreateOptions());
         return this.playwrightServer;
     }
@@ -156,6 +153,10 @@ public class BrowserFactory {
         return contextOptions;
     }
 
+    public Page getNewPage() {
+        BrowserFactory.PageFactory pageFactory = new PageFactory();
+        return pageFactory.getNewPageFromBrowserContext();
+    }
 
     public class PageFactory {
 

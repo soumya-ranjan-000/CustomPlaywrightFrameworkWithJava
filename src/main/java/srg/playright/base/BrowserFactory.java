@@ -7,6 +7,7 @@ import srg.exceptions.BrowserTypeNotFoundException;
 import srg.util.ResourceHandler;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -33,6 +34,8 @@ public class BrowserFactory {
     private boolean isTracingEnabled;
     private String localeLanguage;
     private String args;
+    private boolean isCrossBrowserTestingIsEnabled;
+    private String crossBrowserTestingEnv;
 
     @Getter
     private Playwright playwrightServer;
@@ -40,12 +43,10 @@ public class BrowserFactory {
     private Browser lclBrowser;
     private BrowserContext browserContext;
 
-    public BrowserFactory() {
-        initializeBrowserProperties();
-    }
-
     void initializeBrowserProperties() {
-        Properties prop = CucumberRunner.testRunner.get().getBrowserProperties();
+        Properties prop = CucumberRunner.testRunner.get().getPlaywrightProperties();
+        this.isCrossBrowserTestingIsEnabled = Boolean.parseBoolean(prop.getProperty("CrossBrowserTestingEnabled"));
+        this.crossBrowserTestingEnv = prop.getProperty("crossBrowserEnv");
         this.browser = prop.getProperty("browserType");
         this.channel = prop.getProperty("channel");
         this.headless = Boolean.parseBoolean(prop.getProperty("headless"));
@@ -65,39 +66,51 @@ public class BrowserFactory {
         this.permissions = prop.getProperty("permissions");
         this.isTracingEnabled = Boolean.parseBoolean(prop.getProperty("tracingEnabled"));
         this.args = prop.getProperty("args");
+
     }
 
     private Playwright.CreateOptions getPlaywrightCreateOptions() {
         // Create Playwright with custom options
-        Playwright.CreateOptions createOptions = new Playwright.CreateOptions()
+        return new Playwright.CreateOptions()
                 .setEnv(new HashMap<>(System.getenv()));
-        return createOptions;
     }
 
     private Playwright startServer() {
+        this.initializeBrowserProperties();
         this.playwrightServer = Playwright.create(getPlaywrightCreateOptions());
         return this.playwrightServer;
     }
 
     public BrowserType initBrowserType() throws BrowserTypeNotFoundException {
-        playwrightServer = this.startServer();
+        this.playwrightServer = this.startServer();
         switch (this.browser) {
             case "chromium" -> {
-                this.browserType = playwrightServer.chromium();
+                return this.playwrightServer.chromium();
             }
             case "webkit" -> {
-                this.browserType = playwrightServer.webkit();
+                return this.playwrightServer.webkit();
             }
             case "firefox" -> {
-                this.browserType = playwrightServer.firefox();
+                return this.playwrightServer.firefox();
             }
             default -> throw new BrowserTypeNotFoundException(this.browser);
         }
-        return this.browserType;
     }
 
-    public Browser startBrowserWithNewConnection() throws BrowserTypeNotFoundException {
-        this.lclBrowser = initBrowserType().launch(getLaunchOptions());
+    public Browser startBrowserWithNewConnection() throws BrowserTypeNotFoundException, UnsupportedEncodingException {
+        this.browserType = this.initBrowserType();
+        if (this.isCrossBrowserTestingIsEnabled) {
+            switch (this.crossBrowserTestingEnv.toLowerCase()) {
+                case "browserstack":
+                    this.lclBrowser = BrowserStack.connect(this.browserType);
+                    break;
+                case "lambdatest":
+                    this.lclBrowser = LambdaTest.connect(this.browserType);
+                    break;
+            }
+        } else {
+            this.lclBrowser = this.browserType.launch(getLaunchOptions());
+        }
         return lclBrowser;
     }
 
@@ -109,8 +122,10 @@ public class BrowserFactory {
     BrowserType.LaunchOptions getLaunchOptions() {
         BrowserType.LaunchOptions launchOptions = new BrowserType.LaunchOptions();
         launchOptions.setHeadless(this.headless);
-        launchOptions.setChannel(this.channel);
-        launchOptions.setChromiumSandbox(this.isChromiumSandbox);
+        if (this.browserType.name().equals("chromium")) {
+            launchOptions.setChannel(this.channel);
+            launchOptions.setChromiumSandbox(this.isChromiumSandbox);
+        }
         launchOptions.setSlowMo(this.slowMo);
         launchOptions.setTimeout(this.timeOut);
         launchOptions.setDownloadsPath(Path.of(this.downloadsPath));
@@ -122,12 +137,12 @@ public class BrowserFactory {
 
     Browser.NewContextOptions getBrowserContextOptions() {
         Browser.NewContextOptions contextOptions = new Browser.NewContextOptions();
-        if(isWindowMaximized){
+        if (isWindowMaximized) {
             contextOptions.setViewportSize(null);
-        }else {
+        } else {
             contextOptions.setViewportSize(viewPortWidth, viewPortHeight);
         }
-        contextOptions.setScreenSize(viewPortWidth,viewPortHeight);
+        contextOptions.setScreenSize(viewPortWidth, viewPortHeight);
         contextOptions.setAcceptDownloads(true);
         contextOptions.setJavaScriptEnabled(javaScriptEnabled);
         contextOptions.setLocale(this.localeLanguage);
@@ -138,13 +153,16 @@ public class BrowserFactory {
         return contextOptions;
     }
 
+    public Page getNewPage() {
+        BrowserFactory.PageFactory pageFactory = new PageFactory();
+        return pageFactory.getNewPageFromBrowserContext();
+    }
 
     public class PageFactory {
 
         Browser.NewPageOptions getPageOptions(String fileName) throws IOException {
             Properties prop = ResourceHandler.getPropertiesFile(fileName);
-            Browser.NewPageOptions pageOptions = new Browser.NewPageOptions();
-            return pageOptions;
+            return new Browser.NewPageOptions();
         }
 
         public Page getNewPage(String pagePropertiesFileName) throws IOException {

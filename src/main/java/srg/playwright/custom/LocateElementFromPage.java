@@ -1,7 +1,6 @@
 package srg.playwright.custom;
 
 import com.aventstack.extentreports.Status;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.gson.JsonObject;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
@@ -13,22 +12,25 @@ import srg.StartTest;
 import srg.exceptions.ElementNotFoundException;
 import srg.exceptions.InvalidPropertiesException;
 import srg.extentreports.ExtentTestLogger;
-import srg.util.ResourceHandler;
 
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-public class LocateElementFromPage {
-    private StartTest myTestRunner = null;
-    private Page page;
-    private JsonObject locatorObject;
-    private final Logger logger = LoggerFactory.getLogger(LocateElementFromPage.class);
-    private ExtentTestLogger testManager = null;
+public class LocateElementFromPage implements ElementLocator {
 
-    public LocateElementFromPage(Page page) throws JsonProcessingException {
+    private final Page page;
+    StartTest runner = CucumberRunner.testRunner.get();
+    JsonObject locatorObject = runner.getPageObjects();
+    ExtentTestLogger testManager = new ExtentTestLogger(CucumberRunner.testRunner.get().getExtentLogger());
+    Logger logger = LoggerFactory.getLogger(LocateElementFromPage.class);
+
+    public LocateElementFromPage(Page page) {
         this.page = page;
-        testManager = new ExtentTestLogger(CucumberRunner.testRunner.get().getExtentLogger());
-        locatorObject = ResourceHandler.convertYamlToJsonObject("PageObjects.yml");
+    }
+
+    void printCommonLog(String pageName, String elementName) {
+        logger.info(String.format("Element Need To Be Locate: [ Page Name: %s, Element Name: %s ]", pageName, elementName));
+        testManager.infoLog(String.format("Element Need To Be Locate: [ Page Name: %s, Element Name: %s ]", pageName, elementName));
     }
 
     public Locator locateElementByRole(String pageName, String elementName) throws Exception {
@@ -37,58 +39,66 @@ public class LocateElementFromPage {
     }
 
     public Locator locateElementByRole(String pageName, String elementName, Page.GetByRoleOptions roleOptions) throws Exception {
+        printCommonLog(pageName, elementName);
         JsonObject elementObj = this.verifyAndReturnElementFromPageObjects(pageName, elementName);
-        logger.debug(String.format("Locating Element: {Page Name: %s, Element Name: %s}", pageName, elementName));
-        logger.info("Element details: {}", elementObj.toString());
-        testManager.infoLog(String.format("<b>Locating Element:</b> <i>{Page Name: %s, Element Name: %s}</i>", pageName, elementName));
-        testManager.markUpJSONLog(Status.INFO, elementObj.toString());
-        String elementValue = elementObj.get("Value").getAsString();
-        String type = elementObj.get("Type").getAsString();
-        // Validate 'Type' and 'AriaRoleType' in one go
-        if (!"role".equalsIgnoreCase(type) || !elementObj.has("AriaRoleType")) {
-            throw new InvalidPropertiesException("Type: Role is needed for this operation. Operation name: 'locateElementByRole'");
-        }
-        String ariaRole = elementObj.get("AriaRoleType").getAsString();
-        if (isValidPattern(elementValue)) {
-            roleOptions.setName(Pattern.compile(elementValue));
-        } else {
-            roleOptions.setName(elementValue);
-        }
-
-        Locator locator = page.getByRole(AriaRole.valueOf(ariaRole.toUpperCase()), roleOptions);
-        if (locator.count() > 0) {
-            logger.debug(String.format("Successfully Located Element. Details: %s", elementObj));
-            testManager.passLog("Element Located Successfully.");
-            return locator;
-        } else {
-            logger.error(String.format("Element '%s' not found. Details: %s", elementName, elementObj));
-            testManager.failLog("Element not found!!!");
-            throw new ElementNotFoundException(String.format("Element '%s' not found. Details: %s", elementName, elementObj));
+        try {
+            String elementValue = elementObj.get("Value").getAsString();
+            String type = elementObj.get("Type").getAsString();
+            // Validate 'Type' and 'AriaRoleType' in one go
+            if (!"role".equalsIgnoreCase(type) || !elementObj.has("AriaRoleType")) {
+                throw new InvalidPropertiesException("Type: Role is needed for this operation. Operation name: 'locateElementByRole'");
+            }
+            String ariaRole = elementObj.get("AriaRoleType").getAsString();
+            if (isValidPattern(elementValue)) {
+                roleOptions.setName(Pattern.compile(elementValue));
+            } else {
+                roleOptions.setName(elementValue);
+            }
+            Locator locator = page.getByRole(AriaRole.valueOf(ariaRole.toUpperCase()), roleOptions);
+            if (locator.count() > 0) {
+                logger.info("locateElementByRole: Element Located Successfully.");
+                testManager.passLog("locateElementByRole", "Element Located Successfully.");
+                return locator;
+            } else {
+                throw new ElementNotFoundException(String.format("Element '%s' not found. Details: %s", elementName, elementObj));
+            }
+        } catch (Exception e) {
+            logger.error("Element not found. Reason: {}", e.getMessage(), e);
+            testManager.failLog("<p style=\"color: red; font-weight: bold;\">" + "Element not found." + "</p>" +
+                    "<b>Reason:</b> " + e.getMessage(), e);
+            logger.error("locateElementByRole - FAILED");
+            testManager.failLog("locateElementByRole - FAILED");
+            throw e;
         }
     }
 
     public Locator locateElementByText(String pageName, String elementName, Page.GetByTextOptions getByTextOptions) throws Exception {
+        printCommonLog(pageName, elementName);
         JsonObject elementObj = this.verifyAndReturnElementFromPageObjects(pageName, elementName);
-        logger.debug(String.format("Locating Element: {Page Name: %s, Element Name: %s}", pageName, elementName));
-        logger.info("Element details: {}", elementObj.toString());
-        testManager.infoLog(String.format("<b>Locating Element:</b> <i>{Page Name: %s, Element Name: %s}</i>", pageName, elementName));
-        testManager.markUpJSONLog(Status.INFO, elementObj.toString());
-        String elementValue = elementObj.get("Value").getAsString();
-        Locator locator = null;
-        if (isValidPattern(elementValue)) {
-            locator = page.getByText(Pattern.compile(elementValue), getByTextOptions);
-        } else {
-            locator = page.getByText(elementValue, getByTextOptions);
+        try {
+            String elementValue = elementObj.get("Value").getAsString();
+            Locator locator;
+            if (isValidPattern(elementValue)) {
+                locator = page.getByText(Pattern.compile(elementValue), getByTextOptions);
+            } else {
+                locator = page.getByText(elementValue, getByTextOptions);
+            }
+            if (locator.count() > 0) {
+                logger.info("locateElementByText: Element Located Successfully.");
+                testManager.passLog("locateElementByText", "Element Located Successfully.");
+                return locator;
+            } else {
+                throw new ElementNotFoundException(String.format("Element '%s' not found. Details: %s", elementName, elementObj));
+            }
+        } catch (Exception e) {
+            logger.error("Element not found. Reason: {}", e.getMessage(), e);
+            testManager.failLog("<p style=\"color: red; font-weight: bold;\">" + "Element not found." + "</p>" +
+                    "<b>Reason:</b> " + e.getMessage(), e);
+            logger.error("locateElementByText - FAILED");
+            testManager.failLog("locateElementByText - FAILED");
+            throw e;
         }
-        if (locator.count() > 0) {
-            logger.debug(String.format("Successfully Located Element. Details: %s", elementObj));
-            testManager.passLog("Element Located Successfully.");
-            return locator;
-        } else {
-            logger.error(String.format("Element '%s' not found. Details: %s", elementName, elementObj));
-            testManager.failLog("Element not found!!!");
-            throw new ElementNotFoundException(String.format("Element '%s' not found. Details: %s", elementName, elementObj));
-        }
+
     }
 
     public Locator locateElementByText(String pageName, String elementName) throws Exception {
@@ -96,93 +106,211 @@ public class LocateElementFromPage {
         return locateElementByText(pageName, elementName, getByTextOptions);
     }
 
-    public Locator locateElementByLabel(String pageName, String elementName, Page.GetByLabelOptions getByLabelOptions) {
-        JsonObject elementObj = this.locatorObject.getAsJsonObject(pageName).getAsJsonObject(elementName);
-        String elementValue = elementObj.get("Value").getAsString();
-        if (isValidPattern(elementValue)) {
-            return page.getByLabel(Pattern.compile(elementValue), getByLabelOptions);
-        } else {
-            return page.getByLabel(elementValue, getByLabelOptions);
+    public Locator locateElementByLabel(String pageName, String elementName, Page.GetByLabelOptions getByLabelOptions) throws Exception {
+        printCommonLog(pageName, elementName);
+        JsonObject elementObj = this.verifyAndReturnElementFromPageObjects(pageName, elementName);
+        try {
+            Locator locator;
+            String elementValue = elementObj.get("Value").getAsString();
+            if (isValidPattern(elementValue)) {
+                locator = page.getByLabel(Pattern.compile(elementValue), getByLabelOptions);
+            } else {
+                locator = page.getByLabel(elementValue, getByLabelOptions);
+            }
+            if (locator.count() > 0) {
+                logger.info("locateElementByLabel: Element Located Successfully.");
+                testManager.passLog("locateElementByLabel", "Element Located Successfully.");
+                return locator;
+            } else {
+                throw new ElementNotFoundException(String.format("Element '%s' not found. Details: %s", elementName, elementObj));
+            }
+        } catch (Exception e) {
+            logger.error("Element not found. Reason: {}", e.getMessage(), e);
+            testManager.failLog("<p style=\"color: red; font-weight: bold;\">" + "Element not found." + "</p>" +
+                    "<b>Reason:</b> " + e.getMessage(), e);
+            logger.error("locateElementByLabel - FAILED");
+            testManager.failLog("locateElementByLabel - FAILED");
+            throw e;
         }
     }
 
-    public Locator locateElementByLabel(String pageName, String elementName) {
-        JsonObject elementObj = this.locatorObject.getAsJsonObject(pageName).getAsJsonObject(elementName);
+    public Locator locateElementByLabel(String pageName, String elementName) throws Exception {
         Page.GetByLabelOptions getByLabelOptions = new Page.GetByLabelOptions();
-        getByLabelOptions = elementObj.has("ExactMatch") ? getByLabelOptions.setExact(elementObj.get("ExactMatch").getAsBoolean()) : getByLabelOptions;
         return locateElementByLabel(pageName, elementName, getByLabelOptions);
     }
 
-    public Locator locateElementByPlaceHolder(String pageName, String elementName, Page.GetByPlaceholderOptions placeholderOptions) {
-        JsonObject elementObj = this.locatorObject.getAsJsonObject(pageName).getAsJsonObject(elementName);
-        String elementValue = elementObj.get("Value").getAsString();
-        if (isValidPattern(elementValue)) {
-            return page.getByPlaceholder(Pattern.compile(elementValue), placeholderOptions);
-        } else {
-            return page.getByPlaceholder(elementValue, placeholderOptions);
+    public Locator locateElementByPlaceHolder(String pageName, String elementName, Page.GetByPlaceholderOptions placeholderOptions) throws Exception {
+        printCommonLog(pageName, elementName);
+        JsonObject elementObj = this.verifyAndReturnElementFromPageObjects(pageName, elementName);
+        try {
+            Locator locator;
+            String elementValue = elementObj.get("Value").getAsString();
+            if (isValidPattern(elementValue)) {
+                locator = page.getByPlaceholder(Pattern.compile(elementValue), placeholderOptions);
+            } else {
+                locator = page.getByPlaceholder(elementValue, placeholderOptions);
+            }
+            if (locator.count() > 0) {
+                logger.info("locateElementByPlaceHolder: Element Located Successfully.");
+                testManager.passLog("locateElementByPlaceHolder", "Element Located Successfully.");
+                return locator;
+            } else {
+                throw new ElementNotFoundException(String.format("Element '%s' not found. Details: %s", elementName, elementObj));
+            }
+        } catch (Exception e) {
+            logger.error("Element not found. Reason: {}", e.getMessage(), e);
+            testManager.failLog("<p style=\"color: red; font-weight: bold;\">" + "Element not found." + "</p>" +
+                    "<b>Reason:</b> " + e.getMessage(), e);
+            logger.error("locateElementByPlaceHolder - FAILED");
+            testManager.failLog("locateElementByPlaceHolder - FAILED");
+            throw e;
         }
     }
 
-    public Locator locateElementByPlaceHolder(String pageName, String elementName) {
-        JsonObject elementObj = this.locatorObject.getAsJsonObject(pageName).getAsJsonObject(elementName);
+    public Locator locateElementByPlaceHolder(String pageName, String elementName) throws Exception {
         Page.GetByPlaceholderOptions getByPlaceholderOptions = new Page.GetByPlaceholderOptions();
-        getByPlaceholderOptions = elementObj.has("ExactMatch") ? getByPlaceholderOptions.setExact(elementObj.get("ExactMatch").getAsBoolean()) : getByPlaceholderOptions;
         return locateElementByPlaceHolder(pageName, elementName, getByPlaceholderOptions);
     }
 
-    public Locator locateElementByTitle(String pageName, String elementName) {
-        JsonObject elementObj = this.locatorObject.getAsJsonObject(pageName).getAsJsonObject(elementName);
+    public Locator locateElementByTitle(String pageName, String elementName) throws Exception {
         Page.GetByTitleOptions getByTitleOptions = new Page.GetByTitleOptions();
-        getByTitleOptions = elementObj.has("ExactMatch") ? getByTitleOptions.setExact(elementObj.get("ExactMatch").getAsBoolean()) :
-                getByTitleOptions;
         return locateElementByTitle(pageName, elementName, getByTitleOptions);
     }
 
-    public Locator locateElementByTitle(String pageName, String elementName, Page.GetByTitleOptions titleOptions) {
-        JsonObject elementObj = this.locatorObject.getAsJsonObject(pageName).getAsJsonObject(elementName);
-        String elementValue = elementObj.get("Value").getAsString();
-        if (isValidPattern(elementValue)) {
-            return page.getByTitle(Pattern.compile(elementValue), titleOptions);
-        } else {
-            return page.getByTitle(elementValue, titleOptions);
+    public Locator locateElementByTitle(String pageName, String elementName, Page.GetByTitleOptions titleOptions) throws Exception {
+        printCommonLog(pageName, elementName);
+        JsonObject elementObj = this.verifyAndReturnElementFromPageObjects(pageName, elementName);
+        try {
+            Locator locator;
+            String elementValue = elementObj.get("Value").getAsString();
+            if (isValidPattern(elementValue)) {
+                locator = page.getByTitle(Pattern.compile(elementValue), titleOptions);
+            } else {
+                locator = page.getByTitle(elementValue, titleOptions);
+            }
+            if (locator.count() > 0) {
+                logger.info("locateElementByTitle: Element Located Successfully.");
+                testManager.passLog("locateElementByTitle", "Element Located Successfully.");
+                return locator;
+            } else {
+                throw new ElementNotFoundException(String.format("Element '%s' not found. Details: %s", elementName, elementObj));
+            }
+        } catch (Exception e) {
+            logger.error("Element not found. Reason: {}", e.getMessage(), e);
+            testManager.failLog("<p style=\"color: red; font-weight: bold;\">" + "Element not found." + "</p>" +
+                    "<b>Reason:</b> " + e.getMessage(), e);
+            logger.error("locateElementByTitle - FAILED");
+            testManager.failLog("locateElementByTitle - FAILED");
+            throw e;
         }
     }
 
-    public Locator locateElementByTestId(String pageName, String elementName) {
-        JsonObject elementObj = this.locatorObject.getAsJsonObject(pageName).getAsJsonObject(elementName);
-        String elementValue = elementObj.get("Value").getAsString();
-        if (isValidPattern(elementValue)) {
-            return page.getByTestId(Pattern.compile(elementValue));
-        } else {
-            return page.getByTestId(elementValue);
+    public Locator locateElementByTestId(String pageName, String elementName) throws Exception {
+        printCommonLog(pageName, elementName);
+        JsonObject elementObj = this.verifyAndReturnElementFromPageObjects(pageName, elementName);
+        try {
+            Locator locator;
+            String elementValue = elementObj.get("Value").getAsString();
+            if (isValidPattern(elementValue)) {
+                locator = page.getByTestId(Pattern.compile(elementValue));
+            } else {
+                locator = page.getByTestId(elementValue);
+            }
+            if (locator.count() > 0) {
+                logger.info("Element Located Successfully.");
+                testManager.passLog("Element Located Successfully.");
+                logger.info("<=== locateElementByTestId - PASSED ===>");
+                testManager.passLog("<=== locateElementByTestId - PASSED ===>");
+                return locator;
+            } else {
+                throw new ElementNotFoundException(String.format("Element '%s' not found. Details: %s", elementName, elementObj));
+            }
+        } catch (Exception e) {
+            logger.error("Element not found. Reason: {}", e.getMessage(), e);
+            logger.error("<=== locateElementByTestId - FAILED ===>");
+            testManager.failLog("<p style=\"color: red; font-weight: bold;\">" + "Element not found." + "</p>" +
+                    "<b>Reason:</b> " + e.getMessage(), e);
+            testManager.failLog("<=== locateElementByTestId - FAILED ===>");
+            throw e;
         }
     }
 
-    public Locator locateElementByAltText(String pageName, String elementName, Page.GetByAltTextOptions altTextOptions) {
-        JsonObject elementObj = this.locatorObject.getAsJsonObject(pageName).getAsJsonObject(elementName);
-        String elementValue = elementObj.get("Value").getAsString();
-        if (isValidPattern(elementValue)) {
-            return page.getByAltText(Pattern.compile(elementValue), altTextOptions);
-        } else {
-            return page.getByAltText(elementValue, altTextOptions);
+    public Locator locateElementByAltText(String pageName, String elementName, Page.GetByAltTextOptions altTextOptions) throws Exception {
+        printCommonLog(pageName, elementName);
+        JsonObject elementObj = this.verifyAndReturnElementFromPageObjects(pageName, elementName);
+        try {
+            Locator locator;
+            String elementValue = elementObj.get("Value").getAsString();
+            if (isValidPattern(elementValue)) {
+                locator = page.getByAltText(Pattern.compile(elementValue), altTextOptions);
+            } else {
+                locator = page.getByAltText(elementValue, altTextOptions);
+            }
+            if (locator.count() > 0) {
+                logger.info("locateElementByAltText: Element Located Successfully.");
+                testManager.passLog("locateElementByAltText", "Element Located Successfully.");
+                return locator;
+            } else {
+                throw new ElementNotFoundException(String.format("Element '%s' not found. Details: %s", elementName, elementObj));
+            }
+        } catch (Exception e) {
+            logger.error("Element not found. Reason: {}", e.getMessage(), e);
+            testManager.failLog("<p style=\"color: red; font-weight: bold;\">" + "Element not found." + "</p>" +
+                    "<b>Reason:</b> " + e.getMessage(), e);
+            logger.error("locateElementByAltText - FAILED");
+            testManager.failLog("locateElementByAltText - FAILED");
+            throw e;
         }
     }
 
-    public Locator locateElementByAltText(String pageName, String elementName) {
-        JsonObject elementObj = this.locatorObject.getAsJsonObject(pageName).getAsJsonObject(elementName);
+    public Locator locateElementByAltText(String pageName, String elementName) throws Exception {
         Page.GetByAltTextOptions altTextOptions = new Page.GetByAltTextOptions();
-        altTextOptions = elementObj.has("ExactMatch") ? altTextOptions.setExact(elementObj.get("ExactMatch").getAsBoolean()) :
-                altTextOptions;
         return locateElementByAltText(pageName, elementName, altTextOptions);
     }
 
-    public Locator locateElementByCssOrXpath(String pageName, String elementName) {
-        JsonObject elementObj = this.locatorObject.getAsJsonObject(pageName).getAsJsonObject(elementName);
-        return page.locator(elementObj.get("Value").getAsString());
+    public Locator locateElementByCssOrXpath(String pageName, String elementName) throws Exception {
+        printCommonLog(pageName, elementName);
+        JsonObject elementObj = this.verifyAndReturnElementFromPageObjects(pageName, elementName);
+        try {
+            Locator locator;
+            locator = page.locator(elementObj.get("Value").getAsString());
+            if (locator.count() > 0) {
+                logger.info("locateElementByCssOrXpath: Element Located Successfully.");
+                testManager.passLog("locateElementByCssOrXpath", "Element Located Successfully.");
+                return locator;
+            } else {
+                throw new ElementNotFoundException(String.format("Element '%s' not found. Details: %s", elementName, elementObj));
+            }
+        } catch (Exception e) {
+            logger.error("Element not found. Reason: {}", e.getMessage(), e);
+            testManager.failLog("<p style=\"color: red; font-weight: bold;\">" + "Element not found." + "</p>" +
+                    "<b>Reason:</b> " + e.getMessage(), e);
+            logger.error("locateElementByCssOrXpath - FAILED");
+            testManager.failLog("locateElementByCssOrXpath - FAILED");
+            throw e;
+        }
     }
 
-    public Locator locateElementByCssOrXpath(String cssOrXpath) {
-        return page.locator(cssOrXpath);
+    public Locator locateElementByCssOrXpath(String cssOrXpath) throws ElementNotFoundException {
+        logger.info("locateElementByCssOrXpath. xpath/css: " + cssOrXpath);
+        testManager.infoLog("locateElementByCssOrXpath", "xpath/css: " + cssOrXpath);
+        try {
+            Locator locator = page.locator(cssOrXpath);
+            if (locator.count() > 0) {
+                logger.info("locateElementByCssOrXpath: Element Located Successfully.");
+                testManager.passLog("locateElementByCssOrXpath", "Element Located Successfully.");
+                return locator;
+            } else {
+                throw new ElementNotFoundException(String.format("Element not found. Locator: %s", cssOrXpath));
+            }
+        } catch (Exception e) {
+            logger.error("Element not found. Reason: {}", e.getMessage(), e);
+            testManager.failLog("<p style=\"color: red; font-weight: bold;\">" + "Element not found." + "</p>" +
+                    "<b>Reason:</b> " + e.getMessage(), e);
+            logger.error("locateElementByCssOrXpath - FAILED");
+            testManager.failLog("locateElementByCssOrXpath - FAILED");
+            throw e;
+        }
     }
 
 
@@ -196,7 +324,7 @@ public class LocateElementFromPage {
     }
 
     JsonObject verifyAndReturnElementFromPageObjects(String pageName, String elementName) throws Exception {
-        JsonObject elementObj = null;
+        JsonObject elementObj;
         try {
             if (this.locatorObject.has(pageName)) {
                 JsonObject pageObject = this.locatorObject.getAsJsonObject(pageName);
@@ -225,9 +353,16 @@ public class LocateElementFromPage {
                 } else throw new Exception("Element [%s] not found.".formatted(elementName));
             } else throw new Exception("Page [%s] not found.".formatted(pageName));
         } catch (Exception e) {
-            testManager.failLog("Step Failed: ", e);
+            logger.error("Element Validation Failed. Reason: ", e);
+            logger.error("Element Verification - FAILED");
+            testManager.failLog("Element Validation Failed. Reason", e);
+            testManager.failLog("Element Verification - FAILED");
             throw e;
         }
+        logger.info("Element Details: {}", elementObj);
+        testManager.markUpJSONLog(Status.INFO, elementObj.toString());
+        testManager.passLog("Element Verification - PASSED");
+        logger.info("Element Verification - PASSED");
         return elementObj;
     }
 }

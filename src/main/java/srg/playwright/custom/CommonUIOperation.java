@@ -1,27 +1,36 @@
 package srg.playwright.custom;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.microsoft.playwright.Page;
-import srg.CucumberRunner;
+import com.microsoft.playwright.Response;
+import lombok.Setter;
 
-public class CommonUIOperation {
+
+@Setter
+public class CommonUIOperation extends LocateElementFromPage {
+
     private Page page;
-    private LocateElementFromPage locateElementFromPage;
 
-    public CommonUIOperation() throws JsonProcessingException {
-        this.setPage(CucumberRunner.testRunner.get().getPage());
-        locateElementFromPage = new LocateElementFromPage(this.page);
-    }
-
-    public void setPage(Page page){
+    public CommonUIOperation(Page page) {
+        super(page);
         this.page = page;
     }
 
-    public Page getPage(){
-        return this.page;
-    }
-
-    public LocateElementFromPage getElementLocatorForPage() {
-        return locateElementFromPage;
+    public CommonUIOperation navigateToUrl(String url) {
+        try {
+            Response response = page.navigate(url);
+            if (response != null) {
+                if (response.status() == 200) {
+                    testManager.passLog("Navigate To URL.", "URL: %s".formatted(url));
+                } else {
+                    testManager.failLog("Navigate To URL. URL: %s".formatted(url));
+                }
+            } else {
+                testManager.passLog("Navigate To URL.", "URL: %s".formatted(url));
+            }
+        } catch (Exception e) {
+            testManager.failLog("Navigated To URL Failed. URL: %s".formatted(url), e);
+            throw e;
+        }
+        return this;
     }
 }

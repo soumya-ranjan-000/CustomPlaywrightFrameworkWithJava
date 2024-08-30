@@ -7,7 +7,7 @@ Feature: Web Login
     Given the user is on login page
     When the user enters valid credentials
     And hits submit button
-#    Then the user should be logged in successfully
+    Then the user should be logged in successfully
 
 #  Scenario: User should be able to logout
 #    Given the user is on login page

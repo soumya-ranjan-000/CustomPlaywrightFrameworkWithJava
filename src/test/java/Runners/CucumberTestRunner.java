@@ -2,7 +2,7 @@ package Runners;
 
 import io.cucumber.testng.AbstractTestNGCucumberTests;
 import io.cucumber.testng.CucumberOptions;
-import srg.StartTest;
+import srg.TestSetup;
 import org.testng.annotations.DataProvider;
 
 @CucumberOptions(
@@ -10,10 +10,10 @@ import org.testng.annotations.DataProvider;
         glue = {"StepDefinitions"}
 )
 public class CucumberTestRunner extends AbstractTestNGCucumberTests {
-    public static ThreadLocal<StartTest> testRunner = new ThreadLocal<>();
+    public static ThreadLocal<TestSetup> testRunner = new ThreadLocal<>();
 
     @Override
-    @DataProvider
+    @DataProvider(parallel = true)
     public Object[][] scenarios(){
         return super.scenarios();
     }

@@ -5,72 +5,62 @@ import com.aventstack.extentreports.ExtentTest;
 import io.cucumber.java.After;
 import io.cucumber.java.Before;
 import io.cucumber.java.Scenario;
-import io.cucumber.java.en.Given;
+import io.cucumber.java.en.When;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import srg.CucumberRunner;
-import srg.StartTest;
+import srg.TestSetup;
 import srg.exceptions.BrowserTypeNotFoundException;
-import srg.playright.base.BrowserFactory;
+import srg.playright.base.PlaywrightFactory;
 
-import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.Base64;
 
 public class CommonCucumberTestSetup {
-
-    public ExtentTest extentTestLogger;
     private final Logger LOGGER = LoggerFactory.getLogger(CommonCucumberTestSetup.class);
 
-
-
     @Before(order = 0)
-    public void before(Scenario scenario) throws IOException {
-        CucumberRunner.testRunner.set(new StartTest());
-        StartTest myTestRunner = CucumberRunner.testRunner.get();
-        myTestRunner.setPlaywrightProperties("playwright.properties");
-        myTestRunner.setPageProperties("page.properties");
-        CucumberTestRunner.testRunner.set(myTestRunner);
+    public void before(Scenario scenario) throws Exception {
         String scenarioName = scenario.getName();
         String featureFileName = scenario.getUri().toString().split("features/")[1].split("\\.")[0];
-        if (myTestRunner.getFeatureFileNames().isEmpty()) {
-            myTestRunner.addFeatureFileName(featureFileName);
-            myTestRunner.addExtentReportByFeatureFileName(featureFileName);
-        } else if (!myTestRunner.getFeatureFileNames().contains(featureFileName)) {
-            myTestRunner.addExtentReportByFeatureFileName(featureFileName);
-            myTestRunner.addFeatureFileName(featureFileName);
-        }
-        this.extentTestLogger = myTestRunner.getExtentReportByFeatureFileName(featureFileName).createTest(scenarioName);
+        TestSetup myTestRunner = new TestSetup();
         myTestRunner.setScenario(scenario);
-        myTestRunner.setExtentLogger(this.extentTestLogger);
-        myTestRunner.setPageObjects();
+        CucumberRunner.testRunner.set(myTestRunner);
+        CucumberTestRunner.testRunner.set(myTestRunner);
+        if (!TestSetup.getExtentReportsWithfeature().containsKey(featureFileName)) {
+            myTestRunner.addExtentReportByFeatureFileName(featureFileName);
+        }
+        ExtentTest test = myTestRunner.getExtentReportByFeatureFileName(featureFileName).createTest(scenarioName);
+        myTestRunner.setExtentLogger(test);
         LOGGER.info("===> Feature: '{}'", featureFileName);
         LOGGER.info("===> Scenario: '{}'", scenarioName);
     }
 
     @After(order = 0)
     public void after(Scenario scenario) {
-        StartTest myTestRunner = CucumberRunner.testRunner.get();
+        TestSetup myTestRunner = CucumberRunner.testRunner.get();
         String featureFileName = scenario.getUri().toString().split("features/")[1].split("\\.")[0];
         if (scenario.isFailed()) {
-            ExtentTest extentTest = CucumberRunner.testRunner.get().getExtentLogger();
-            byte[] buffer = CucumberRunner.testRunner.get().getPage().screenshot();
+            ExtentTest extentTest = myTestRunner.getExtentLogger();
+            byte[] buffer = myTestRunner.getPlaywrightFactory().getPage().screenshot();
             extentTest.addScreenCaptureFromBase64String(Base64.getEncoder().encodeToString(buffer));
         }
         myTestRunner.getExtentReportByFeatureFileName(featureFileName).flush();
-        if(CucumberRunner.testRunner.get().getBrowserContext() != null) CucumberRunner.testRunner.get().getBrowserContext().close();
-        if(CucumberRunner.testRunner.get().getBrowser() != null) CucumberRunner.testRunner.get().getBrowser().close();
-        CucumberRunner.testRunner.get().getPlaywrightServer().close();
+        if (myTestRunner.getPlaywrightFactory().getBrowserContext() != null)
+            myTestRunner.getPlaywrightFactory().getBrowserContext().close();
+        if (myTestRunner.getPlaywrightFactory().getBrowser() != null)
+            myTestRunner.getPlaywrightFactory().getBrowser().close();
+        myTestRunner.getPlaywrightFactory().getPlaywright().close();
     }
 
-
-    @Given("Initialize browser and setup test data")
-    public void initializeBrowserAndSetupTestData() throws IOException, BrowserTypeNotFoundException {
-        var myTestRunner = CucumberRunner.testRunner.get();
-        BrowserFactory browserFactory = myTestRunner.getBrowserFactory();
-        myTestRunner.setBrowser(browserFactory.startBrowserWithNewConnection());
-        myTestRunner.setBrowserContext(browserFactory.getNewBrowserContext());
-        myTestRunner.setPlaywrightServer(browserFactory.getPlaywrightServer());
-        myTestRunner.setPage(browserFactory.getNewPage());
+    @When("Open browser")
+    public void openBrowser() throws BrowserTypeNotFoundException, UnsupportedEncodingException {
+        var testRunner = CucumberRunner.testRunner.get();
+        var playwrightFactory = new PlaywrightFactory();
+        playwrightFactory.initializeBrowserProperties(testRunner.getPlaywrightProperties());
+        playwrightFactory.startBrowserWithNewConnection();
+        playwrightFactory.startNewBrowserContext();
+        playwrightFactory.startNewPageFromBrowserContext();
+        testRunner.setPlaywrightFactory(playwrightFactory);
     }
-
 }

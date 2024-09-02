@@ -10,7 +10,11 @@ import org.testng.annotations.DataProvider;
         glue = {"StepDefinitions"}
 )
 public class CucumberTestRunner extends AbstractTestNGCucumberTests {
-    public static ThreadLocal<TestSetup> testRunner = new ThreadLocal<>();
+    public static ThreadLocal<TestSetup> testRunner;
+
+    static{
+       testRunner = new ThreadLocal<>();
+    }
 
     @Override
     @DataProvider(parallel = true)

@@ -18,22 +18,23 @@ import java.util.Base64;
 
 public class CommonCucumberTestSetup {
     private final Logger LOGGER = LoggerFactory.getLogger(CommonCucumberTestSetup.class);
-
     @Before(order = 0)
     public void before(Scenario scenario) throws Exception {
         String scenarioName = scenario.getName();
         String featureFileName = scenario.getUri().toString().split("features/")[1].split("\\.")[0];
         TestSetup myTestRunner = new TestSetup();
+        myTestRunner.setFeatureFile(featureFileName);
         myTestRunner.setScenario(scenario);
-        CucumberRunner.testRunner.set(myTestRunner);
-        CucumberTestRunner.testRunner.set(myTestRunner);
-        if (!TestSetup.getExtentReportsWithfeature().containsKey(featureFileName)) {
-            myTestRunner.addExtentReportByFeatureFileName(featureFileName);
+        myTestRunner.getScenarioName().set(scenarioName);
+        if (!TestSetup.getExtentReportsWithfeature().containsKey(scenarioName)) {
+            myTestRunner.addExtentReportByFeatureFileName(scenarioName);
         }
-        ExtentTest test = myTestRunner.getExtentReportByFeatureFileName(featureFileName).createTest(scenarioName);
+        ExtentTest test = myTestRunner.getExtentReportByFeatureFileName(scenarioName).createTest(scenarioName);
         myTestRunner.setExtentLogger(test);
         LOGGER.info("===> Feature: '{}'", featureFileName);
         LOGGER.info("===> Scenario: '{}'", scenarioName);
+        CucumberRunner.testRunner.set(myTestRunner);
+        CucumberTestRunner.testRunner.set(myTestRunner);
     }
 
     @After(order = 0)
@@ -45,7 +46,8 @@ public class CommonCucumberTestSetup {
             byte[] buffer = myTestRunner.getPlaywrightFactory().getPage().screenshot();
             extentTest.addScreenCaptureFromBase64String(Base64.getEncoder().encodeToString(buffer));
         }
-        myTestRunner.getExtentReportByFeatureFileName(featureFileName).flush();
+        var extentReport = myTestRunner.getExtentReportByFeatureFileName(scenario.getName());
+        extentReport.flush();
         if (myTestRunner.getPlaywrightFactory().getBrowserContext() != null)
             myTestRunner.getPlaywrightFactory().getBrowserContext().close();
         if (myTestRunner.getPlaywrightFactory().getBrowser() != null)

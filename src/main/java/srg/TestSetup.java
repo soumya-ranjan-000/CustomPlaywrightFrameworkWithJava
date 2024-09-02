@@ -4,9 +4,9 @@ import com.aventstack.extentreports.ExtentReports;
 import com.aventstack.extentreports.ExtentTest;
 import com.google.gson.JsonObject;
 import io.cucumber.java.Scenario;
+import io.cucumber.java.hu.Ha;
 import lombok.Getter;
 import lombok.Setter;
-import srg.exceptions.BrowserTypeNotFoundException;
 import srg.extentreports.ExtentManager;
 import srg.playright.base.PlaywrightFactory;
 import srg.util.ResourceHandler;
@@ -22,9 +22,17 @@ public class TestSetup {
     final String PAGE_ELE_FILE_NAME = "PageObjects.yml";
     @Getter
     private static HashMap<String, ExtentReports> extentReportsWithfeature = new HashMap<>();
+
+    @Getter
+    public static final ThreadLocal<HashMap<String,ExtentTest>> extentTestWithScenario = new ThreadLocal<>();
     @Getter
     @Setter
     private Scenario scenario;
+    @Getter @Setter
+    private String featureFile;
+    @Getter @Setter
+    private ThreadLocal<String> scenarioName = new ThreadLocal<>();
+
     @Getter @Setter
     private ExtentTest extentLogger;
     @Getter
@@ -46,7 +54,8 @@ public class TestSetup {
     }
 
     public void addExtentReportByFeatureFileName(String featureFile) {
-        extentReportsWithfeature.put(featureFile, ExtentManager.createExtentReports(featureFile));
+        ExtentReports reports = ExtentManager.createExtentReports(featureFile);
+        extentReportsWithfeature.put(featureFile, reports);
     }
 
     public ExtentReports getExtentReportByFeatureFileName(String featureFile) {

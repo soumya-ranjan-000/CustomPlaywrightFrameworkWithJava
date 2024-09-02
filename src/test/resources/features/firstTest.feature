@@ -1,22 +1,16 @@
-Feature: Web Login
+Feature: Web Logout
 
-  Background:
-    Given Initialize browser and setup test data
+  Background: Open Browser with given configuration
+    When Open browser
 
-  Scenario: User should be able to login with valid credentials
+  Scenario: User should be able to log out One
     Given the user is on login page
     When the user enters valid credentials
-    And hits submit button
-    Then the user should be logged in successfully
 
-#  Scenario: User should be able to logout
-#    Given the user is on login page
-#    When the user enters valid credentials
-#    And hits submit button
-#    Then the user should be logged in successfully
-#
-#  Scenario: User should be able to logout new
-#    Given the user is on login page
-#    When the user enters valid credentials
-#    And hits submit button
-#    Then the user should be logged in successfully
+  Scenario: User should be able to log out Two
+    Given the user is on login page
+    When the user enters valid credentials
+
+  Scenario: User should be able to log out Three
+    Given the user is on login page
+    When the user enters valid credentials

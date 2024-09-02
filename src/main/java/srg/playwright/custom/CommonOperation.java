@@ -6,16 +6,15 @@ import lombok.Setter;
 
 
 @Setter
-public class CommonUIOperation extends LocateElementFromPage {
-
+public class CommonOperation extends LocateElementFromPage {
     private Page page;
 
-    public CommonUIOperation(Page page) {
+    public CommonOperation(Page page) {
         super(page);
         this.page = page;
     }
 
-    public CommonUIOperation navigateToUrl(String url) {
+    public CommonOperation navigateToUrl(String url) {
         try {
             Response response = page.navigate(url);
             if (response != null) {

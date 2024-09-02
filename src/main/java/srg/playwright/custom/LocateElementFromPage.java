@@ -8,7 +8,7 @@ import com.microsoft.playwright.options.AriaRole;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import srg.CucumberRunner;
-import srg.StartTest;
+import srg.TestSetup;
 import srg.exceptions.ElementNotFoundException;
 import srg.exceptions.InvalidPropertiesException;
 import srg.extentreports.ExtentTestLogger;
@@ -19,9 +19,8 @@ import java.util.regex.PatternSyntaxException;
 public class LocateElementFromPage implements ElementLocator {
 
     private final Page page;
-    StartTest runner = CucumberRunner.testRunner.get();
-    JsonObject locatorObject = runner.getPageObjects();
-    ExtentTestLogger testManager = new ExtentTestLogger(CucumberRunner.testRunner.get().getExtentLogger());
+    TestSetup testRunner = CucumberRunner.testRunner.get();
+    ExtentTestLogger testManager = new ExtentTestLogger(testRunner.getExtentLogger());
     Logger logger = LoggerFactory.getLogger(LocateElementFromPage.class);
 
     public LocateElementFromPage(Page page) {
@@ -324,12 +323,13 @@ public class LocateElementFromPage implements ElementLocator {
     }
 
     JsonObject verifyAndReturnElementFromPageObjects(String pageName, String elementName) throws Exception {
+        JsonObject locatorObject = testRunner.getPageElements();
         JsonObject elementObj;
         try {
-            if (this.locatorObject.has(pageName)) {
-                JsonObject pageObject = this.locatorObject.getAsJsonObject(pageName);
+            if (locatorObject.has(pageName)) {
+                JsonObject pageObject = locatorObject.getAsJsonObject(pageName);
                 if (pageObject.has(elementName)) {
-                    elementObj = this.locatorObject.getAsJsonObject(pageName).getAsJsonObject(elementName);
+                    elementObj = locatorObject.getAsJsonObject(pageName).getAsJsonObject(elementName);
                     if (elementObj.has("Type")) {
                         if (elementObj.get("Type").isJsonNull()) {
                             throw new Exception("Value properties/attribute not found.");

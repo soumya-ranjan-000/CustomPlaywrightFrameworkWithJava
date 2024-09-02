@@ -7,12 +7,12 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.testng.Assert;
 import srg.CucumberRunner;
-import srg.StartTest;
-import srg.playwright.custom.CommonUIOperation;
+import srg.TestSetup;
+import srg.playwright.custom.CommonOperation;
 
 public class Steps {
-    StartTest myTestRunner = CucumberRunner.testRunner.get();
-    CommonUIOperation uiOperation = new CommonUIOperation(myTestRunner.getPage());
+    TestSetup myTestRunner = CucumberRunner.testRunner.get();
+    CommonOperation uiOperation = new CommonOperation(myTestRunner.getPlaywrightFactory().getPage());
 
 
     @Given("the user is on login page")
@@ -44,6 +44,7 @@ public class Steps {
         Thread.sleep(3000L);
         System.out.println("Yeah I am able logged in.");
     }
+
 
 
 }

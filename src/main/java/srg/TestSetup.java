@@ -26,6 +26,8 @@ public class TestSetup {
     @Getter
     public static final ThreadLocal<HashMap<String,ExtentTest>> extentTestWithScenario = new ThreadLocal<>();
     @Getter
+    private final boolean isLoggingScreenshotEnabled;
+    @Getter
     @Setter
     private Scenario scenario;
     @Getter @Setter
@@ -47,10 +49,18 @@ public class TestSetup {
     @Setter
     private JsonObject pageElements;
 
+    @Getter @Setter
+    private String screenshotPath;
+    @Getter @Setter
+    private boolean takeScreenshotOfEachLocator;
+
     public TestSetup() throws IOException {
         setPlaywrightProperties(ResourceHandler.getPropertiesFile(PW_PROP_FILE_NAME));
         setPageProperties(ResourceHandler.getPropertiesFile(PAGE_PROP_FILE_NAME));
         setPageElements(ResourceHandler.convertYamlToJsonObject(PAGE_ELE_FILE_NAME));
+        this.screenshotPath = this.getPlaywrightProperties().getProperty("screenshotPath");
+        this.isLoggingScreenshotEnabled = Boolean.parseBoolean(this.getPlaywrightProperties().getProperty("takeScreenshotForEachStep", "false"));
+        this.takeScreenshotOfEachLocator = Boolean.parseBoolean(this.getPlaywrightProperties().getProperty("takeScreenshotOfEachLocator", "false"));
     }
 
     public void addExtentReportByFeatureFileName(String featureFile) {

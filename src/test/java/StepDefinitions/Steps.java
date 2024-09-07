@@ -29,6 +29,7 @@ public class Steps {
         Locator password = uiOperation.locateElementByRole("Login Page", "Password_InputBox");
         Assert.assertNotNull(password);
         password.fill("Admin@760");
+        uiOperation.isAttached(password);
     }
 
     @When("hits submit button")

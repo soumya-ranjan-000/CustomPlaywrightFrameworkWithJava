@@ -1,35 +1,34 @@
 package srg.playwright.custom;
 
-import com.aventstack.extentreports.Status;
+import com.aventstack.extentreports.ExtentTest;
+import com.aventstack.extentreports.markuputils.CodeLanguage;
 import com.google.gson.JsonObject;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.options.AriaRole;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import srg.CucumberRunner;
 import srg.TestSetup;
 import srg.exceptions.ElementNotFoundException;
 import srg.exceptions.InvalidPropertiesException;
-import srg.extentreports.ExtentTestLogger;
+import srg.extentreports.LogToConsoleAndHTMLReport;
 
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 public class LocateElementFromPage implements ElementLocator {
 
-    private final Page page;
-    TestSetup testRunner = CucumberRunner.testRunner.get();
-    ExtentTestLogger testManager = new ExtentTestLogger(testRunner.getExtentLogger());
-    Logger logger = LoggerFactory.getLogger(LocateElementFromPage.class);
+    TestSetup runner = CucumberRunner.testRunner.get();
+    private Page page = runner.getPlaywrightFactory().getPage();
 
-    public LocateElementFromPage(Page page) {
-        this.page = page;
+    LogToConsoleAndHTMLReport consoleAndHTMLReport = new LogToConsoleAndHTMLReport();
+
+    public void setHTMLLogger(ExtentTest node) {
+        consoleAndHTMLReport = new LogToConsoleAndHTMLReport(node);
     }
 
     void printCommonLog(String pageName, String elementName) {
-        logger.info(String.format("Element Need To Be Locate: [ Page Name: %s, Element Name: %s ]", pageName, elementName));
-        testManager.infoLog(String.format("Element Need To Be Locate: [ Page Name: %s, Element Name: %s ]", pageName, elementName));
+        consoleAndHTMLReport.info("Element Need To Be Locate:");
+        consoleAndHTMLReport.info("[ Page Name: %s, Element Name: %s ]".formatted(pageName, elementName));
     }
 
     public Locator locateElementByRole(String pageName, String elementName) throws Exception {
@@ -55,18 +54,17 @@ public class LocateElementFromPage implements ElementLocator {
             }
             Locator locator = page.getByRole(AriaRole.valueOf(ariaRole.toUpperCase()), roleOptions);
             if (locator.count() > 0) {
-                logger.info("locateElementByRole: Element Located Successfully.");
-                testManager.passLog("locateElementByRole", "Element Located Successfully.");
+                if(runner.isTakeScreenshotOfEachLocator()){
+                    consoleAndHTMLReport.passWithScreenshot("Locate Element By Role","Element Located Successfully.",locator.screenshot());
+                }else{
+                    consoleAndHTMLReport.pass("Locate Element By Role","Element Located Successfully.");
+                }
                 return locator;
             } else {
                 throw new ElementNotFoundException(String.format("Element '%s' not found. Details: %s", elementName, elementObj));
             }
         } catch (Exception e) {
-            logger.error("Element not found. Reason: {}", e.getMessage(), e);
-            testManager.failLog("<p style=\"color: red; font-weight: bold;\">" + "Element not found." + "</p>" +
-                    "<b>Reason:</b> " + e.getMessage(), e);
-            logger.error("locateElementByRole - FAILED");
-            testManager.failLog("locateElementByRole - FAILED");
+            consoleAndHTMLReport.fail("Locate Element By Role", e.getMessage(), e);
             throw e;
         }
     }
@@ -83,18 +81,17 @@ public class LocateElementFromPage implements ElementLocator {
                 locator = page.getByText(elementValue, getByTextOptions);
             }
             if (locator.count() > 0) {
-                logger.info("locateElementByText: Element Located Successfully.");
-                testManager.passLog("locateElementByText", "Element Located Successfully.");
+                if(runner.isTakeScreenshotOfEachLocator()){
+                    consoleAndHTMLReport.passWithScreenshot("Locate Element By Text","Element Located Successfully.",locator.screenshot());
+                }else{
+                    consoleAndHTMLReport.pass("Locate Element By Text","Element Located Successfully.");
+                }
                 return locator;
             } else {
                 throw new ElementNotFoundException(String.format("Element '%s' not found. Details: %s", elementName, elementObj));
             }
         } catch (Exception e) {
-            logger.error("Element not found. Reason: {}", e.getMessage(), e);
-            testManager.failLog("<p style=\"color: red; font-weight: bold;\">" + "Element not found." + "</p>" +
-                    "<b>Reason:</b> " + e.getMessage(), e);
-            logger.error("locateElementByText - FAILED");
-            testManager.failLog("locateElementByText - FAILED");
+            consoleAndHTMLReport.fail("Locate Element By Text", e.getMessage(), e);
             throw e;
         }
 
@@ -117,18 +114,17 @@ public class LocateElementFromPage implements ElementLocator {
                 locator = page.getByLabel(elementValue, getByLabelOptions);
             }
             if (locator.count() > 0) {
-                logger.info("locateElementByLabel: Element Located Successfully.");
-                testManager.passLog("locateElementByLabel", "Element Located Successfully.");
+                if(runner.isTakeScreenshotOfEachLocator()){
+                    consoleAndHTMLReport.passWithScreenshot("Locate Element By Label","Element Located Successfully.",locator.screenshot());
+                }else{
+                    consoleAndHTMLReport.pass("Locate Element By Label","Element Located Successfully.");
+                }
                 return locator;
             } else {
                 throw new ElementNotFoundException(String.format("Element '%s' not found. Details: %s", elementName, elementObj));
             }
         } catch (Exception e) {
-            logger.error("Element not found. Reason: {}", e.getMessage(), e);
-            testManager.failLog("<p style=\"color: red; font-weight: bold;\">" + "Element not found." + "</p>" +
-                    "<b>Reason:</b> " + e.getMessage(), e);
-            logger.error("locateElementByLabel - FAILED");
-            testManager.failLog("locateElementByLabel - FAILED");
+            consoleAndHTMLReport.fail("Locate Element By Label", e.getMessage(), e);
             throw e;
         }
     }
@@ -150,18 +146,17 @@ public class LocateElementFromPage implements ElementLocator {
                 locator = page.getByPlaceholder(elementValue, placeholderOptions);
             }
             if (locator.count() > 0) {
-                logger.info("locateElementByPlaceHolder: Element Located Successfully.");
-                testManager.passLog("locateElementByPlaceHolder", "Element Located Successfully.");
+                if(runner.isTakeScreenshotOfEachLocator()){
+                    consoleAndHTMLReport.passWithScreenshot("Locate Element By Placeholder","Element Located Successfully.",locator.screenshot());
+                }else{
+                    consoleAndHTMLReport.pass("Locate Element By Placeholder","Element Located Successfully.");
+                }
                 return locator;
             } else {
                 throw new ElementNotFoundException(String.format("Element '%s' not found. Details: %s", elementName, elementObj));
             }
         } catch (Exception e) {
-            logger.error("Element not found. Reason: {}", e.getMessage(), e);
-            testManager.failLog("<p style=\"color: red; font-weight: bold;\">" + "Element not found." + "</p>" +
-                    "<b>Reason:</b> " + e.getMessage(), e);
-            logger.error("locateElementByPlaceHolder - FAILED");
-            testManager.failLog("locateElementByPlaceHolder - FAILED");
+            consoleAndHTMLReport.fail("Locate Element By Placeholder", e.getMessage(), e);
             throw e;
         }
     }
@@ -188,18 +183,17 @@ public class LocateElementFromPage implements ElementLocator {
                 locator = page.getByTitle(elementValue, titleOptions);
             }
             if (locator.count() > 0) {
-                logger.info("locateElementByTitle: Element Located Successfully.");
-                testManager.passLog("locateElementByTitle", "Element Located Successfully.");
+                if(runner.isTakeScreenshotOfEachLocator()){
+                    consoleAndHTMLReport.passWithScreenshot("Locate Element By Title","Element Located Successfully.",locator.screenshot());
+                }else{
+                    consoleAndHTMLReport.pass("Locate Element By Title","Element Located Successfully.");
+                }
                 return locator;
             } else {
                 throw new ElementNotFoundException(String.format("Element '%s' not found. Details: %s", elementName, elementObj));
             }
         } catch (Exception e) {
-            logger.error("Element not found. Reason: {}", e.getMessage(), e);
-            testManager.failLog("<p style=\"color: red; font-weight: bold;\">" + "Element not found." + "</p>" +
-                    "<b>Reason:</b> " + e.getMessage(), e);
-            logger.error("locateElementByTitle - FAILED");
-            testManager.failLog("locateElementByTitle - FAILED");
+            consoleAndHTMLReport.fail("Locate Element By Title", e.getMessage(), e);
             throw e;
         }
     }
@@ -216,20 +210,17 @@ public class LocateElementFromPage implements ElementLocator {
                 locator = page.getByTestId(elementValue);
             }
             if (locator.count() > 0) {
-                logger.info("Element Located Successfully.");
-                testManager.passLog("Element Located Successfully.");
-                logger.info("<=== locateElementByTestId - PASSED ===>");
-                testManager.passLog("<=== locateElementByTestId - PASSED ===>");
+                if(runner.isTakeScreenshotOfEachLocator()){
+                    consoleAndHTMLReport.passWithScreenshot("Locate Element By Test ID","Element Located Successfully.",locator.screenshot());
+                }else{
+                    consoleAndHTMLReport.pass("Locate Element By Test ID","Element Located Successfully.");
+                }
                 return locator;
             } else {
                 throw new ElementNotFoundException(String.format("Element '%s' not found. Details: %s", elementName, elementObj));
             }
         } catch (Exception e) {
-            logger.error("Element not found. Reason: {}", e.getMessage(), e);
-            logger.error("<=== locateElementByTestId - FAILED ===>");
-            testManager.failLog("<p style=\"color: red; font-weight: bold;\">" + "Element not found." + "</p>" +
-                    "<b>Reason:</b> " + e.getMessage(), e);
-            testManager.failLog("<=== locateElementByTestId - FAILED ===>");
+            consoleAndHTMLReport.fail("Locate Element By Test ID", e.getMessage(), e);
             throw e;
         }
     }
@@ -246,18 +237,17 @@ public class LocateElementFromPage implements ElementLocator {
                 locator = page.getByAltText(elementValue, altTextOptions);
             }
             if (locator.count() > 0) {
-                logger.info("locateElementByAltText: Element Located Successfully.");
-                testManager.passLog("locateElementByAltText", "Element Located Successfully.");
+                if(runner.isTakeScreenshotOfEachLocator()){
+                    consoleAndHTMLReport.passWithScreenshot("Locate Element By Alt text","Element Located Successfully.",locator.screenshot());
+                }else{
+                    consoleAndHTMLReport.pass("Locate Element By Alt text","Element Located Successfully.");
+                }
                 return locator;
             } else {
                 throw new ElementNotFoundException(String.format("Element '%s' not found. Details: %s", elementName, elementObj));
             }
         } catch (Exception e) {
-            logger.error("Element not found. Reason: {}", e.getMessage(), e);
-            testManager.failLog("<p style=\"color: red; font-weight: bold;\">" + "Element not found." + "</p>" +
-                    "<b>Reason:</b> " + e.getMessage(), e);
-            logger.error("locateElementByAltText - FAILED");
-            testManager.failLog("locateElementByAltText - FAILED");
+            consoleAndHTMLReport.fail("Locate Element By Alt text", e.getMessage(), e);
             throw e;
         }
     }
@@ -274,40 +264,38 @@ public class LocateElementFromPage implements ElementLocator {
             Locator locator;
             locator = page.locator(elementObj.get("Value").getAsString());
             if (locator.count() > 0) {
-                logger.info("locateElementByCssOrXpath: Element Located Successfully.");
-                testManager.passLog("locateElementByCssOrXpath", "Element Located Successfully.");
+                if(runner.isTakeScreenshotOfEachLocator()){
+                    consoleAndHTMLReport.passWithScreenshot("Locate Element By CSS or Xpath","Element Located Successfully.",locator.screenshot());
+                }else{
+                    consoleAndHTMLReport.pass("Locate Element By CSS or Xpath","Element Located Successfully.");
+                }
                 return locator;
             } else {
                 throw new ElementNotFoundException(String.format("Element '%s' not found. Details: %s", elementName, elementObj));
             }
         } catch (Exception e) {
-            logger.error("Element not found. Reason: {}", e.getMessage(), e);
-            testManager.failLog("<p style=\"color: red; font-weight: bold;\">" + "Element not found." + "</p>" +
-                    "<b>Reason:</b> " + e.getMessage(), e);
-            logger.error("locateElementByCssOrXpath - FAILED");
-            testManager.failLog("locateElementByCssOrXpath - FAILED");
+            consoleAndHTMLReport.fail("Locate Element By CSS or Xpath", e.getMessage(), e);
             throw e;
         }
     }
 
     public Locator locateElementByCssOrXpath(String cssOrXpath) throws ElementNotFoundException {
-        logger.info("locateElementByCssOrXpath. xpath/css: " + cssOrXpath);
-        testManager.infoLog("locateElementByCssOrXpath", "xpath/css: " + cssOrXpath);
+        consoleAndHTMLReport.info("Element Need To Be Locate");
+        consoleAndHTMLReport.info("CSS/XPATH: "+cssOrXpath);
         try {
             Locator locator = page.locator(cssOrXpath);
             if (locator.count() > 0) {
-                logger.info("locateElementByCssOrXpath: Element Located Successfully.");
-                testManager.passLog("locateElementByCssOrXpath", "Element Located Successfully.");
+                if(runner.isTakeScreenshotOfEachLocator()){
+                    consoleAndHTMLReport.passWithScreenshot("Locate Element By CSS or Xpath","Element Located Successfully.",locator.screenshot());
+                }else{
+                    consoleAndHTMLReport.pass("Locate Element By CSS or Xpath","Element Located Successfully.");
+                }
                 return locator;
             } else {
                 throw new ElementNotFoundException(String.format("Element not found. Locator: %s", cssOrXpath));
             }
         } catch (Exception e) {
-            logger.error("Element not found. Reason: {}", e.getMessage(), e);
-            testManager.failLog("<p style=\"color: red; font-weight: bold;\">" + "Element not found." + "</p>" +
-                    "<b>Reason:</b> " + e.getMessage(), e);
-            logger.error("locateElementByCssOrXpath - FAILED");
-            testManager.failLog("locateElementByCssOrXpath - FAILED");
+            consoleAndHTMLReport.fail("Locate Element By CSS or Xpath", e.getMessage(), e);
             throw e;
         }
     }
@@ -323,7 +311,7 @@ public class LocateElementFromPage implements ElementLocator {
     }
 
     JsonObject verifyAndReturnElementFromPageObjects(String pageName, String elementName) throws Exception {
-        JsonObject locatorObject = testRunner.getPageElements();
+        JsonObject locatorObject = runner.getPageElements();
         JsonObject elementObj;
         try {
             if (locatorObject.has(pageName)) {
@@ -353,16 +341,13 @@ public class LocateElementFromPage implements ElementLocator {
                 } else throw new Exception("Element [%s] not found.".formatted(elementName));
             } else throw new Exception("Page [%s] not found.".formatted(pageName));
         } catch (Exception e) {
-            logger.error("Element Validation Failed. Reason: ", e);
-            logger.error("Element Verification - FAILED");
-            testManager.failLog("Element Validation Failed. Reason", e);
-            testManager.failLog("Element Verification - FAILED");
+            consoleAndHTMLReport.fail("Element Validation", e);
             throw e;
         }
-        logger.info("Element Details: {}", elementObj);
-        testManager.markUpJSONLog(Status.INFO, elementObj.toString());
-        testManager.passLog("Element Verification - PASSED");
-        logger.info("Element Verification - PASSED");
+        consoleAndHTMLReport.pass("Element Validation");
+        consoleAndHTMLReport.pass(elementObj.toString(), CodeLanguage.JSON);
         return elementObj;
     }
+
+
 }

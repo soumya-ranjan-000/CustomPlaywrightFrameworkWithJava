@@ -293,6 +293,9 @@ public class LogToConsoleAndHTMLReport {
             LOGGER.error(message);
             htmlLogger.log(Status.FAIL, message);
         }
+        LOGGER.error(e.getMessage());
+        htmlLogger.log(Status.FAIL, e);
+
     }
 
     public void fail(ExtentTest node, String stepName, Throwable e, String... messages) {

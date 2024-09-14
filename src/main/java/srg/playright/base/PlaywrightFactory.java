@@ -42,10 +42,10 @@ public class PlaywrightFactory {
 
     /* get local copy of browsercontext, browser, page, and pw object*/
 
-    private static ThreadLocal<Playwright> tlPlaywright = new ThreadLocal<>();
-    private static ThreadLocal<Browser> tlBrowser = new ThreadLocal<>();
-    private static ThreadLocal<BrowserContext> tlBrowserContext = new ThreadLocal<>();
-    private static ThreadLocal<Page> tlpage = new ThreadLocal<>();
+    private static final ThreadLocal<Playwright> tlPlaywright = new ThreadLocal<>();
+    private static final ThreadLocal<Browser> tlBrowser = new ThreadLocal<>();
+    private static final ThreadLocal<BrowserContext> tlBrowserContext = new ThreadLocal<>();
+    private static final ThreadLocal<Page> tlpage = new ThreadLocal<>();
     private final Logger LOGGER = LoggerFactory.getLogger(PlaywrightFactory.class);
 
     public Playwright getPlaywright() {

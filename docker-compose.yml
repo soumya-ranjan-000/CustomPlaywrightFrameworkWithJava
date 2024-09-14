@@ -1,0 +1,35 @@
+version: '3.8'
+
+networks:
+  test:
+    driver: bridge
+
+services:
+  pw-server:
+    container_name: pw-server
+    image:  mcr.microsoft.com/playwright/java:v1.47.0-jammy
+    command:
+      - /bin/sh
+      - -c
+      - |
+        cd /home/pwuser 
+        npx -y playwright@1.47.0 run-server --port 3000
+    ports:
+      - "3000:3000"
+    networks:
+      - test
+    init: true
+
+  pw-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pw-app
+    volumes:
+      - .:/app
+    init: true
+    stdin_open: true
+    tty: true
+    entrypoint: ["/bin/sh"]
+    networks:
+      - test

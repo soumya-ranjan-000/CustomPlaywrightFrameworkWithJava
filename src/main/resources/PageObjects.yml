@@ -1,7 +1,7 @@
 Login Page:
   Login_button:
     Type: Role
-    AriaRoleType: Butto
+    AriaRoleType: Button
     Value: Log In
 
   UserName_InputBox:

@@ -20,6 +20,9 @@ jobs:
       run: mvn exec:java -e -D exec.mainClass=com.microsoft.playwright.CLI -D exec.args="install --with-deps"
     - name: Run tests
       run: mvn test
+  generate-report:
+    runs-on: ubuntu-latest
+    steps:
     - name: Deploy pages
       uses: JamesIves/github-pages-deploy-action@v4.5.0
       with:

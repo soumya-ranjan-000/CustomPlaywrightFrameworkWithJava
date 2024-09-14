@@ -115,10 +115,7 @@ public class CommonOperation extends LocateElementFromPage{
         }
     }
 
-    public static String getMethodName() {
-        StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
-        return stackTraceElements[2].getMethodName();
-    }
+
 
     public void isAttached(Locator locator) {
         try {
@@ -443,5 +440,10 @@ public class CommonOperation extends LocateElementFromPage{
             consoleAndHTMLReport.fail(getMethodName(), e, "Locator: " + locator, "Value: " + values);
             throw e;
         }
+    }
+
+    public static String getMethodName() {
+        StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
+        return stackTraceElements[2].getMethodName();
     }
 }

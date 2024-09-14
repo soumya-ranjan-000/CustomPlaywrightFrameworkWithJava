@@ -71,4 +71,8 @@ public class ResourceHandler {
         }
         return map;
     }
+
+    public static String getFileFromResourcesFolder(String fileName) {
+        return Objects.requireNonNull(ResourceHandler.class.getClassLoader().getResource(fileName)).getFile();
+    }
 }

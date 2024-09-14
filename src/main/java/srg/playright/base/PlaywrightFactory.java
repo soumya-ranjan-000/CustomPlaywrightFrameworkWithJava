@@ -1,10 +1,11 @@
 package srg.playright.base;
 
 import com.microsoft.playwright.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import srg.exceptions.BrowserTypeNotFoundException;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -45,6 +46,7 @@ public class PlaywrightFactory {
     private static ThreadLocal<Browser> tlBrowser = new ThreadLocal<>();
     private static ThreadLocal<BrowserContext> tlBrowserContext = new ThreadLocal<>();
     private static ThreadLocal<Page> tlpage = new ThreadLocal<>();
+    private final Logger LOGGER = LoggerFactory.getLogger(PlaywrightFactory.class);
 
     public Playwright getPlaywright() {
         return tlPlaywright.get();
@@ -85,6 +87,7 @@ public class PlaywrightFactory {
         this.localeLanguage = prop.getProperty("language");
         this.permissions = prop.getProperty("permissions");
         this.args = prop.getProperty("args");
+        LOGGER.info("Initialized Playwright Browser Properties Successfully.");
     }
 
     private Playwright.CreateOptions getPlaywrightCreateOptions() {
@@ -93,12 +96,41 @@ public class PlaywrightFactory {
                 .setEnv(new HashMap<>(System.getenv()));
     }
 
-    private void startPlaywright() {
+    private void startPlaywright() throws IOException {
+        setPlaywrightEnvironment();
         tlPlaywright.set(Playwright.create(getPlaywrightCreateOptions()));
+        LOGGER.info("Started Playwright Successfully.");
     }
 
-    private BrowserType initBrowserType() throws BrowserTypeNotFoundException {
+    private void setPlaywrightEnvironment() throws IOException {
+        String variableName = "PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD";
+        String variableValue = "1";
+
+        // Windows
+        if (System.getProperty("os.name").toLowerCase().contains("win")) {
+            ProcessBuilder pb = new ProcessBuilder("cmd.exe", "/c", "setx", variableName, variableValue);
+            Process p = pb.start();
+            try {
+                p.waitFor();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        // Unix-like systems
+        else {
+            ProcessBuilder pb = new ProcessBuilder("bash", "-c", "export " + variableName + "=" + variableValue);
+            Process p = pb.start();
+            try {
+                p.waitFor();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private BrowserType initBrowserType() throws BrowserTypeNotFoundException, IOException {
         startPlaywright();
+        LOGGER.info("Browser Type: " + this.browserTypeName);
         switch (this.browserTypeName) {
             case "chromium" -> {
                 return tlPlaywright.get().chromium();
@@ -113,7 +145,7 @@ public class PlaywrightFactory {
         }
     }
 
-    public void startBrowserWithNewConnection() throws BrowserTypeNotFoundException, UnsupportedEncodingException {
+    public void startBrowserWithNewConnection() throws BrowserTypeNotFoundException, IOException {
         BrowserType browserType = initBrowserType();
         if (this.isCrossBrowserTestingIsEnabled) {
             switch (this.crossBrowserTestingEnv.toLowerCase()) {
@@ -124,13 +156,17 @@ public class PlaywrightFactory {
                     tlBrowser.set(LambdaTest.connect(browserType));
                     break;
             }
+            LOGGER.info("Connecting to {}....", this.crossBrowserTestingEnv.toUpperCase());
         } else {
             tlBrowser.set(browserType.launch(getLaunchOptions()));
         }
+        if (tlBrowser.get().isConnected()) LOGGER.info("Connection to the browser is successfull.");
+        else LOGGER.info("Connection to the browser is unsuccessfull.");
     }
 
     public void startNewBrowserContext() {
         tlBrowserContext.set(tlBrowser.get().newContext(getBrowserContextOptions()));
+        LOGGER.info("Started Browser Context successfully.");
     }
 
     BrowserType.LaunchOptions getLaunchOptions() {
@@ -181,5 +217,6 @@ public class PlaywrightFactory {
 
     public void startNewPageFromBrowserContext() {
         tlpage.set(tlBrowserContext.get().newPage());
+        LOGGER.info("New Page Created successfully.");
     }
 }

@@ -3,6 +3,8 @@ package srg.playright.base;
 import com.google.gson.JsonObject;
 import com.microsoft.playwright.Browser;
 import com.microsoft.playwright.BrowserType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import srg.CucumberRunner;
 import srg.util.ResourceHandler;
 
@@ -15,6 +17,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class BrowserStack {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(BrowserStack.class);
 
     public static Browser connect(BrowserType browserType) throws UnsupportedEncodingException {
         String caps = URLEncoder.encode(getCapabilities().toString(), "utf-8");
@@ -32,10 +36,13 @@ public class BrowserStack {
             capabilitiesObject.addProperty("os_version", String.valueOf(platform.get("osVersion")));
             capabilitiesObject.addProperty("browser", String.valueOf(platform.get("browserName")));    // allowed browsers are `chrome`, `edge`, `playwright-chromium`, `playwright-firefox` and `playwright-webkit`
             capabilitiesObject.addProperty("browser_version", String.valueOf(platform.get("browserVersion")));
+            LOGGER.info("OS: {},OS_version: {}, Browser: {}, Browser_Version: {}",
+                    platform.get("os"), platform.get("osVersion"), platform.get("browserName"), platform.get("browserVersion"));
         }
-
-        capabilitiesObject.addProperty("browserstack.username", String.valueOf(config.get("userName")));
-        capabilitiesObject.addProperty("browserstack.accessKey", String.valueOf(config.get("accessKey")));
+        String userName = config.containsKey("userName") ? String.valueOf(config.get("userName")) : System.getenv("BROWSERSTACK_USERNAME");
+        String accessKey = config.containsKey("accessKey") ? String.valueOf(config.get("accessKey")) : System.getenv("BROWSERSTACK_PASSWORD");
+        capabilitiesObject.addProperty("browserstack.username", userName);
+        capabilitiesObject.addProperty("browserstack.accessKey", accessKey);
         capabilitiesObject.addProperty("browserstack.geoLocation", String.valueOf(config.get("geoLocation")));
         capabilitiesObject.addProperty("project", String.valueOf(config.get("projectName")));
         capabilitiesObject.addProperty("build", String.valueOf(config.get("buildName")));

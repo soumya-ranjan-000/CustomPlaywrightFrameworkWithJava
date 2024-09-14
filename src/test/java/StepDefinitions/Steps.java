@@ -34,7 +34,7 @@ public class Steps {
 
     @When("hits submit button")
     public void hits_submit_button() throws Exception {
-        Locator loginBtn = uiOperation.locateElementByRole("Login Page", "Login_button", new Page.GetByRoleOptions().setExact(false));
+        Locator loginBtn = uiOperation.locateElementByRole("Login Page", "Login_button", new Page.GetByRoleOptions().setExact(true));
         Assert.assertNotNull(loginBtn);
         loginBtn.click();
         System.out.println("Clicked on submit");

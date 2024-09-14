@@ -4,7 +4,6 @@ import com.aventstack.extentreports.ExtentReports;
 import com.aventstack.extentreports.ExtentTest;
 import com.google.gson.JsonObject;
 import io.cucumber.java.Scenario;
-import io.cucumber.java.hu.Ha;
 import lombok.Getter;
 import lombok.Setter;
 import srg.extentreports.ExtentManager;
@@ -63,7 +62,7 @@ public class TestSetup {
         this.takeScreenshotOfEachLocator = Boolean.parseBoolean(this.getPlaywrightProperties().getProperty("takeScreenshotOfEachLocator", "false"));
     }
 
-    public void addExtentReportByFeatureFileName(String featureFile) {
+    public void addExtentReportByFeatureFileName(String featureFile) throws IOException {
         ExtentReports reports = ExtentManager.createExtentReports(featureFile);
         extentReportsWithfeature.put(featureFile, reports);
     }

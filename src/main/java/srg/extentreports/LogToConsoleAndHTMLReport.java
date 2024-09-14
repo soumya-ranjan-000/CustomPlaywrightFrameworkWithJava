@@ -17,7 +17,7 @@ import java.util.Base64;
 public class LogToConsoleAndHTMLReport {
 
     final Logger LOGGER = LoggerFactory.getLogger(LocateElementFromPage.class);
-    private ExtentTest htmlLogger;
+    private final ExtentTest htmlLogger;
 
     public LogToConsoleAndHTMLReport() {
         htmlLogger = CucumberRunner.testRunner.get().getExtentLogger();

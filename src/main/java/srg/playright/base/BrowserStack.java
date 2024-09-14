@@ -11,6 +11,7 @@ import srg.util.ResourceHandler;
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -21,7 +22,7 @@ public class BrowserStack {
     private static final Logger LOGGER = LoggerFactory.getLogger(BrowserStack.class);
 
     public static Browser connect(BrowserType browserType) throws UnsupportedEncodingException {
-        String caps = URLEncoder.encode(getCapabilities().toString(), "utf-8");
+        String caps = URLEncoder.encode(getCapabilities().toString(), StandardCharsets.UTF_8);
         String ws_endpoint = "wss://cdp.browserstack.com/playwright?caps=" + caps;
         return browserType.connect(ws_endpoint);
     }

@@ -18,7 +18,7 @@ import java.util.regex.PatternSyntaxException;
 public class LocateElementFromPage implements ElementLocator {
 
     TestSetup runner = CucumberRunner.testRunner.get();
-    private Page page = runner.getPlaywrightFactory().getPage();
+    private final Page page = runner.getPlaywrightFactory().getPage();
 
     LogToConsoleAndHTMLReport consoleAndHTMLReport = new LogToConsoleAndHTMLReport();
 

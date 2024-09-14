@@ -20,7 +20,7 @@ public class TestSetup {
     final String PAGE_PROP_FILE_NAME = "page.properties";
     final String PAGE_ELE_FILE_NAME = "PageObjects.yml";
     @Getter
-    private static HashMap<String, ExtentReports> extentReportsWithfeature = new HashMap<>();
+    private static final HashMap<String, ExtentReports> extentReportsWithfeature = new HashMap<>();
 
     @Getter
     public static final ThreadLocal<HashMap<String,ExtentTest>> extentTestWithScenario = new ThreadLocal<>();

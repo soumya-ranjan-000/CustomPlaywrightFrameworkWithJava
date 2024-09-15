@@ -32,8 +32,9 @@ public class CommonCucumberTestSetup {
     }
 
     @Before(order = 0)
-    public void browserSetup() throws IOException, BrowserTypeNotFoundException {
+    public void browserSetup(Scenario scenario) throws IOException, BrowserTypeNotFoundException {
         TestSetup myTestRunner = new TestSetup();
+        myTestRunner.setScenario(scenario);
         CucumberRunner.testRunner.set(myTestRunner);
         CucumberTestRunner.testRunner.set(myTestRunner);
         var testRunner = CucumberRunner.testRunner.get();

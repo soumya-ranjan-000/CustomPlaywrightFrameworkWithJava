@@ -10,8 +10,11 @@ import srg.CucumberRunner;
 import srg.TestSetup;
 import srg.exceptions.ElementNotFoundException;
 import srg.exceptions.InvalidPropertiesException;
+import srg.exceptions.MultipleElementsFoundException;
 import srg.extentreports.LogToConsoleAndHTMLReport;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -36,6 +39,11 @@ public class LocateElementFromPage implements ElementLocator {
         return locateElementByRole(pageName, elementName, roleOptions);
     }
 
+    public List<Locator> locateElementsByRole(String pageName, String elementName) throws Exception {
+        Page.GetByRoleOptions roleOptions = new Page.GetByRoleOptions();
+        return locateElementsByRole(pageName, elementName, roleOptions);
+    }
+
     public Locator locateElementByRole(String pageName, String elementName, Page.GetByRoleOptions roleOptions) throws Exception {
         printCommonLog(pageName, elementName);
         JsonObject elementObj = this.verifyAndReturnElementFromPageObjects(pageName, elementName);
@@ -54,17 +62,50 @@ public class LocateElementFromPage implements ElementLocator {
             }
             Locator locator = page.getByRole(AriaRole.valueOf(ariaRole.toUpperCase()), roleOptions);
             if (locator.count() > 0) {
-                if(runner.isTakeScreenshotOfEachLocator()){
-                    consoleAndHTMLReport.passWithScreenshot("Locate Element By Role","Element Located Successfully.",locator.screenshot());
-                }else{
-                    consoleAndHTMLReport.pass("Locate Element By Role","Element Located Successfully.");
+                if (locator.count() == 1) {
+                    if (runner.isTakeScreenshotOfEachLocator()) {
+                        consoleAndHTMLReport.passWithScreenshot("Locate Element By Role", "Element Located Successfully.", locator.screenshot());
+                    } else {
+                        consoleAndHTMLReport.pass("Locate Element By Role", "Element Located Successfully.");
+                    }
+                    return locator;
+                } else {
+                    throw new MultipleElementsFoundException("More than one element found. Expected: 1, Actual: " + locator.count() + " Details: " + Arrays.toString(locator.all().toArray()));
                 }
-                return locator;
             } else {
                 throw new ElementNotFoundException(String.format("Element '%s' not found. Details: %s", elementName, elementObj));
             }
         } catch (Exception e) {
             consoleAndHTMLReport.fail("Locate Element By Role", e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    public List<Locator> locateElementsByRole(String pageName, String elementName, Page.GetByRoleOptions roleOptions) throws Exception {
+        printCommonLog(pageName, elementName);
+        JsonObject elementObj = this.verifyAndReturnElementFromPageObjects(pageName, elementName);
+        try {
+            String elementValue = elementObj.get("Value").getAsString();
+            String type = elementObj.get("Type").getAsString();
+            // Validate 'Type' and 'AriaRoleType' in one go
+            if (!"role".equalsIgnoreCase(type) || !elementObj.has("AriaRoleType")) {
+                throw new InvalidPropertiesException("Type: Role is needed for this operation. Operation name: 'locateElementByRole'");
+            }
+            String ariaRole = elementObj.get("AriaRoleType").getAsString();
+            if (isValidPattern(elementValue)) {
+                roleOptions.setName(Pattern.compile(elementValue));
+            } else {
+                roleOptions.setName(elementValue);
+            }
+            Locator locator = page.getByRole(AriaRole.valueOf(ariaRole.toUpperCase()), roleOptions);
+            if (locator.count() > 0) {
+                consoleAndHTMLReport.pass("Locate Elements By Role", "Elements Located Successfully.");
+                return locator.all();
+            } else {
+                throw new ElementNotFoundException(String.format("Elements '%s' not found. Details: %s", elementName, elementObj));
+            }
+        } catch (Exception e) {
+            consoleAndHTMLReport.fail("Locate Elements By Role", e.getMessage(), e);
             throw e;
         }
     }
@@ -81,10 +122,10 @@ public class LocateElementFromPage implements ElementLocator {
                 locator = page.getByText(elementValue, getByTextOptions);
             }
             if (locator.count() > 0) {
-                if(runner.isTakeScreenshotOfEachLocator()){
-                    consoleAndHTMLReport.passWithScreenshot("Locate Element By Text","Element Located Successfully.",locator.screenshot());
-                }else{
-                    consoleAndHTMLReport.pass("Locate Element By Text","Element Located Successfully.");
+                if (runner.isTakeScreenshotOfEachLocator()) {
+                    consoleAndHTMLReport.passWithScreenshot("Locate Element By Text", "Element Located Successfully.", locator.screenshot());
+                } else {
+                    consoleAndHTMLReport.pass("Locate Element By Text", "Element Located Successfully.");
                 }
                 return locator;
             } else {
@@ -114,10 +155,10 @@ public class LocateElementFromPage implements ElementLocator {
                 locator = page.getByLabel(elementValue, getByLabelOptions);
             }
             if (locator.count() > 0) {
-                if(runner.isTakeScreenshotOfEachLocator()){
-                    consoleAndHTMLReport.passWithScreenshot("Locate Element By Label","Element Located Successfully.",locator.screenshot());
-                }else{
-                    consoleAndHTMLReport.pass("Locate Element By Label","Element Located Successfully.");
+                if (runner.isTakeScreenshotOfEachLocator()) {
+                    consoleAndHTMLReport.passWithScreenshot("Locate Element By Label", "Element Located Successfully.", locator.screenshot());
+                } else {
+                    consoleAndHTMLReport.pass("Locate Element By Label", "Element Located Successfully.");
                 }
                 return locator;
             } else {
@@ -146,10 +187,10 @@ public class LocateElementFromPage implements ElementLocator {
                 locator = page.getByPlaceholder(elementValue, placeholderOptions);
             }
             if (locator.count() > 0) {
-                if(runner.isTakeScreenshotOfEachLocator()){
-                    consoleAndHTMLReport.passWithScreenshot("Locate Element By Placeholder","Element Located Successfully.",locator.screenshot());
-                }else{
-                    consoleAndHTMLReport.pass("Locate Element By Placeholder","Element Located Successfully.");
+                if (runner.isTakeScreenshotOfEachLocator()) {
+                    consoleAndHTMLReport.passWithScreenshot("Locate Element By Placeholder", "Element Located Successfully.", locator.screenshot());
+                } else {
+                    consoleAndHTMLReport.pass("Locate Element By Placeholder", "Element Located Successfully.");
                 }
                 return locator;
             } else {
@@ -183,10 +224,10 @@ public class LocateElementFromPage implements ElementLocator {
                 locator = page.getByTitle(elementValue, titleOptions);
             }
             if (locator.count() > 0) {
-                if(runner.isTakeScreenshotOfEachLocator()){
-                    consoleAndHTMLReport.passWithScreenshot("Locate Element By Title","Element Located Successfully.",locator.screenshot());
-                }else{
-                    consoleAndHTMLReport.pass("Locate Element By Title","Element Located Successfully.");
+                if (runner.isTakeScreenshotOfEachLocator()) {
+                    consoleAndHTMLReport.passWithScreenshot("Locate Element By Title", "Element Located Successfully.", locator.screenshot());
+                } else {
+                    consoleAndHTMLReport.pass("Locate Element By Title", "Element Located Successfully.");
                 }
                 return locator;
             } else {
@@ -210,10 +251,10 @@ public class LocateElementFromPage implements ElementLocator {
                 locator = page.getByTestId(elementValue);
             }
             if (locator.count() > 0) {
-                if(runner.isTakeScreenshotOfEachLocator()){
-                    consoleAndHTMLReport.passWithScreenshot("Locate Element By Test ID","Element Located Successfully.",locator.screenshot());
-                }else{
-                    consoleAndHTMLReport.pass("Locate Element By Test ID","Element Located Successfully.");
+                if (runner.isTakeScreenshotOfEachLocator()) {
+                    consoleAndHTMLReport.passWithScreenshot("Locate Element By Test ID", "Element Located Successfully.", locator.screenshot());
+                } else {
+                    consoleAndHTMLReport.pass("Locate Element By Test ID", "Element Located Successfully.");
                 }
                 return locator;
             } else {
@@ -237,10 +278,10 @@ public class LocateElementFromPage implements ElementLocator {
                 locator = page.getByAltText(elementValue, altTextOptions);
             }
             if (locator.count() > 0) {
-                if(runner.isTakeScreenshotOfEachLocator()){
-                    consoleAndHTMLReport.passWithScreenshot("Locate Element By Alt text","Element Located Successfully.",locator.screenshot());
-                }else{
-                    consoleAndHTMLReport.pass("Locate Element By Alt text","Element Located Successfully.");
+                if (runner.isTakeScreenshotOfEachLocator()) {
+                    consoleAndHTMLReport.passWithScreenshot("Locate Element By Alt text", "Element Located Successfully.", locator.screenshot());
+                } else {
+                    consoleAndHTMLReport.pass("Locate Element By Alt text", "Element Located Successfully.");
                 }
                 return locator;
             } else {
@@ -264,10 +305,10 @@ public class LocateElementFromPage implements ElementLocator {
             Locator locator;
             locator = page.locator(elementObj.get("Value").getAsString());
             if (locator.count() > 0) {
-                if(runner.isTakeScreenshotOfEachLocator()){
-                    consoleAndHTMLReport.passWithScreenshot("Locate Element By CSS or Xpath","Element Located Successfully.",locator.screenshot());
-                }else{
-                    consoleAndHTMLReport.pass("Locate Element By CSS or Xpath","Element Located Successfully.");
+                if (runner.isTakeScreenshotOfEachLocator()) {
+                    consoleAndHTMLReport.passWithScreenshot("Locate Element By CSS or Xpath", "Element Located Successfully.", locator.screenshot());
+                } else {
+                    consoleAndHTMLReport.pass("Locate Element By CSS or Xpath", "Element Located Successfully.");
                 }
                 return locator;
             } else {
@@ -281,14 +322,14 @@ public class LocateElementFromPage implements ElementLocator {
 
     public Locator locateElementByCssOrXpath(String cssOrXpath) throws ElementNotFoundException {
         consoleAndHTMLReport.info("Element Need To Be Locate");
-        consoleAndHTMLReport.info("CSS/XPATH: "+cssOrXpath);
+        consoleAndHTMLReport.info("CSS/XPATH: " + cssOrXpath);
         try {
             Locator locator = page.locator(cssOrXpath);
             if (locator.count() > 0) {
-                if(runner.isTakeScreenshotOfEachLocator()){
-                    consoleAndHTMLReport.passWithScreenshot("Locate Element By CSS or Xpath","Element Located Successfully.",locator.screenshot());
-                }else{
-                    consoleAndHTMLReport.pass("Locate Element By CSS or Xpath","Element Located Successfully.");
+                if (runner.isTakeScreenshotOfEachLocator()) {
+                    consoleAndHTMLReport.passWithScreenshot("Locate Element By CSS or Xpath", "Element Located Successfully.", locator.screenshot());
+                } else {
+                    consoleAndHTMLReport.pass("Locate Element By CSS or Xpath", "Element Located Successfully.");
                 }
                 return locator;
             } else {

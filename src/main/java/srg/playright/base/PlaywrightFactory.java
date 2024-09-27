@@ -67,13 +67,13 @@ public class PlaywrightFactory {
 
 
     public void initializeBrowserProperties(Properties prop) {
-        if (System.getenv().containsKey("Enable_Cross_Browser_Testing") && (System.getenv("Enable_Cross_Browser_Testing") != null)) {
-            this.isCrossBrowserTestingIsEnabled = Boolean.parseBoolean(System.getenv("Enable_Cross_Browser_Testing"));
+        if (System.getProperties().containsKey("Enable_Cross_Browser_Testing") && (System.getProperty("Enable_Cross_Browser_Testing") != null)) {
+            this.isCrossBrowserTestingIsEnabled = Boolean.parseBoolean(System.getProperty("Enable_Cross_Browser_Testing"));
         } else {
             this.isCrossBrowserTestingIsEnabled = Boolean.parseBoolean(prop.getProperty("CrossBrowserTestingEnabled", "true"));
         }
-        if (System.getenv().containsKey("Browser_Env") && (System.getenv("Browser_Env") != null)) {
-            this.crossBrowserTestingEnv = System.getenv("Browser_Env");
+        if (System.getProperties().containsKey("Browser_Env") && (System.getProperty("Browser_Env") != null)) {
+            this.crossBrowserTestingEnv = System.getProperty("Browser_Env");
         } else {
             this.crossBrowserTestingEnv = prop.getProperty("crossBrowserEnv", "lambdatest");
         }

@@ -3,6 +3,7 @@ package srg.playwright.custom;
 import com.aventstack.extentreports.ExtentTest;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
+import com.microsoft.playwright.PlaywrightException;
 import com.microsoft.playwright.Response;
 import com.microsoft.playwright.options.AriaRole;
 import lombok.Getter;
@@ -431,13 +432,10 @@ public class CommonOperation extends LocateElementFromPage{
             assertThat(locator).hasValues(values);
             consoleAndHTMLReport.pass(getMethodName(), "Locator: " + locator, "Value: " + values);
         } catch (AssertionFailedError e) {
+            consoleAndHTMLReport.fail(getMethodName(), e, "Locator: " + locator, "Value: " + values);
             if (testRunner.isTakeScreenshotOfEachLocator()) {
                 consoleAndHTMLReport.failWithScreenshot(getMethodName(), locator.toString(), locator.screenshot());
-                consoleAndHTMLReport.fail(e);
-            } else {
-                consoleAndHTMLReport.fail(getMethodName(), locator.toString(), e);
             }
-            consoleAndHTMLReport.fail(getMethodName(), e, "Locator: " + locator, "Value: " + values);
             throw e;
         }
     }
@@ -445,5 +443,15 @@ public class CommonOperation extends LocateElementFromPage{
     public static String getMethodName() {
         StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
         return stackTraceElements[2].getMethodName();
+    }
+
+    public void clickOnElement(Locator locator) {
+        try {
+            locator.click();
+            consoleAndHTMLReport.pass(getMethodName(), "Successfully clicked on element [" + locator + "]");
+        } catch (PlaywrightException exception) {
+            consoleAndHTMLReport.failWithScreenshot(getMethodName(), locator.toString(), locator.screenshot());
+            throw exception;
+        }
     }
 }

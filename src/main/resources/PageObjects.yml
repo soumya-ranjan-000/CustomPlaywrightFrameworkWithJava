@@ -22,4 +22,70 @@ Login Page:
     Type: Text
     Value: Forgot Your Password?
 
+Home Page:
+  My_Account_Drop_Menu:
+    Type: xpath
+    Value: //span[text()='My Account']/parent::a[@title="My Account"]
+  Register:
+    Type: Role
+    AriaRoleType: LINK
+    Value: Register
+
+Register Page:
+  FirstNameTextBox:
+    Type: Role
+    AriaRoleType: TEXTBOX
+    Value: First Name
+
+  LastNameTextBox:
+    Type: Role
+    AriaRoleType: TEXTBOX
+    Value: Last Name
+
+  EmailTextBox:
+    Type: Role
+    AriaRoleType: TEXTBOX
+    Value: E-Mail
+
+  TelephoneTextBox:
+    Type: Role
+    AriaRoleType: TEXTBOX
+    Value: Telephone
+
+  PasswordTextBox:
+    Type: css
+    Value: //input[@id='input-password']
+
+  PasswordConfirmTextBox:
+    Type: Role
+    AriaRoleType: TEXTBOX
+    Value: Password Confirm
+
+  ContinueButton:
+    Type: Role
+    AriaRoleType: Button
+    Value: Continue
+
+  PrivacyPolicyAgreeCheckBox:
+    Type: xpath
+    Value: //input[@name='agree']
+
+Account_Success_Page:
+  AccountCreatedHeader:
+    Type: Role
+    AriaRoleType: HEADING
+    Value: Your Account Has Been Created!
+
+  ContinueButton:
+    Type: Role
+    AriaRoleType: LINK
+    Value: Continue
+
+Account_Page:
+
+  MyAccountHeader:
+    Type: xpath
+    Value: //h2[text()='My Account']
+
+
 

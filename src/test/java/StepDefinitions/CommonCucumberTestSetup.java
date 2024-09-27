@@ -67,14 +67,16 @@ public class CommonCucumberTestSetup {
     public void after(Scenario scenario) {
         TestSetup myTestRunner = CucumberRunner.testRunner.get();
         String screenshotPath = myTestRunner.getScreenshotPath() + "\\" + scenario.getName() + ".png";
+        ExtentTest extentTest = myTestRunner.getExtentLogger();
         if (scenario.isFailed()) {
-            ExtentTest extentTest = myTestRunner.getExtentLogger();
             myTestRunner.getPlaywrightFactory().getPage().screenshot(
                     new Page.ScreenshotOptions().setPath(Paths.get(screenshotPath)).setFullPage(true));
             extentTest.addScreenCaptureFromPath(scenario.getName() + ".png");
+            extentTest.fail(scenario.getName() + " -- Failed !!!");
             markTestStatus("failed", null, myTestRunner.getPlaywrightFactory().getPage());
         } else {
             markTestStatus("passed", null, myTestRunner.getPlaywrightFactory().getPage());
+            extentTest.pass(scenario.getName() + " -- Passed !!!");
         }
         var extentReport = myTestRunner.getExtentReportByFeatureFileName(scenario.getName());
         extentReport.flush();

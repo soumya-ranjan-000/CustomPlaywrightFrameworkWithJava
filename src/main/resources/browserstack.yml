@@ -3,9 +3,9 @@ accessKey: cEWs6zvLtLsfdhKEN5r8
 framework: cucumber
 platforms:
   - os: Windows
-    osVersion: 10
+    osVersion: 8
     browserName: chrome
-    browserVersion: 120.0
+    browserVersion: 129.0
 #  - os: Windows
 #    osVersion: 11
 #    browserName: Edge

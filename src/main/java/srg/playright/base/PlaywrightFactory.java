@@ -105,7 +105,7 @@ public class PlaywrightFactory {
     }
 
     private void startPlaywright() throws IOException {
-        setPlaywrightEnvironment();
+//        setPlaywrightEnvironment();
         tlPlaywright.set(Playwright.create(getPlaywrightCreateOptions()));
         LOGGER.info("Started Playwright Successfully.");
     }

@@ -2,23 +2,32 @@ userName: soumyaranjanghad_FsCSGL
 accessKey: cEWs6zvLtLsfdhKEN5r8
 framework: cucumber
 platforms:
-  - os: Windows
-    osVersion: 8
-    browserName: chrome
-    browserVersion: 129.0
-#  - os: Windows
+  #  - browserName: chrome
+  #    os: OS X
+  #    osVersion: Big Sur
+  #    browserVersion: latest
+  - browserName: playwright-webkit
+    os: OS X
+    osVersion: Ventura
+    browserVersion: 18
+#  - browserName: playwright-firefox
+#    os: Windows
 #    osVersion: 11
-#    browserName: Edge
-#    browserVersion: latest
-#  - deviceName: Samsung Galaxy S23 Ultra
+#    browserVersion: 130
+#  - browserName: chrome
+#    osVersion: 11.0
+#    deviceName: Xiaomi Redmi Note 11
+#  - browserName: chrome
 #    osVersion: 13.0
-#    browserName: chrome
-#    deviceOrientation: portrait
+#    deviceName: Samsung Galaxy S23 Ultra
+#  - browserName: safari
+#    osVersion: 17
+#    deviceName: iPad Pro 11 2024
 parallelsPerPlatform: 1
 browserstackLocal: true
 buildName: implement cross browser testing
 buildTag: reg
-projectName: Custom Playwright Framework with Java For Salesforce
+projectName: Custom Playwright Framework with Java
 playwrightVersion: 1.latest
 geoLocation: IN
 # ===================

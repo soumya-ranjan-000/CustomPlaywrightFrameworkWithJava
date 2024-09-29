@@ -77,9 +77,13 @@ public class PlaywrightFactory {
         } else {
             this.crossBrowserTestingEnv = prop.getProperty("crossBrowserEnv", "lambdatest");
         }
+        if (System.getProperties().containsKey("Headless") && (System.getProperty("Headless") != null)) {
+            this.headless = Boolean.parseBoolean(System.getProperty("Headless"));
+        } else {
+            this.headless = Boolean.parseBoolean(prop.getProperty("headless", "true"));
+        }
         this.browserTypeName = prop.getProperty("browserType");
         this.channel = prop.getProperty("channel");
-        this.headless = Boolean.parseBoolean(prop.getProperty("headless"));
         this.isWindowMaximized = Boolean.parseBoolean(prop.getProperty("maximized"));
         this.javaScriptEnabled = Boolean.parseBoolean(prop.getProperty("javaScriptEnabled"));
         this.isChromiumSandbox = Boolean.parseBoolean(prop.getProperty("ChromiumSandbox"));
@@ -105,36 +109,10 @@ public class PlaywrightFactory {
     }
 
     private void startPlaywright() throws IOException {
-//        setPlaywrightEnvironment();
         tlPlaywright.set(Playwright.create(getPlaywrightCreateOptions()));
         LOGGER.info("Started Playwright Successfully.");
     }
 
-    private void setPlaywrightEnvironment() throws IOException {
-        String variableName = "PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD";
-        String variableValue = "1";
-
-        // Windows
-        if (System.getProperty("os.name").toLowerCase().contains("win")) {
-            ProcessBuilder pb = new ProcessBuilder("cmd.exe", "/c", "setx", variableName, variableValue);
-            Process p = pb.start();
-            try {
-                p.waitFor();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-        // Unix-like systems
-        else {
-            ProcessBuilder pb = new ProcessBuilder("bash", "-c", "export " + variableName + "=" + variableValue);
-            Process p = pb.start();
-            try {
-                p.waitFor();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-    }
 
     private BrowserType initBrowserType() throws BrowserTypeNotFoundException, IOException {
         startPlaywright();

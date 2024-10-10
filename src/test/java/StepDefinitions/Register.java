@@ -114,4 +114,8 @@ public class Register {
                 break;
         }
     }
+
+    void printHelloWorld(){
+        System.out.println("Hello World.");
+    }
 }

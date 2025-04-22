@@ -11,5 +11,5 @@ Feature: Register Functionality
     Then Verify User should be logged in and taken to Account Success page
     And Verify proper details should be displayed on the "Account Success" page
     And Click on "Continue" button displayed in "Account Success" page
-    Then Verify User should be taken to "Account" page
+    And Verify User should be taken to "Account" page
 

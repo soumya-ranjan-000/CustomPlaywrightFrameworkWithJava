@@ -1,11 +1,12 @@
 package StepDefinitions;
 
-import com.microsoft.playwright.Locator;
-import com.microsoft.playwright.Page;
+import Runners.CucumberTestRunner;
+import com.microsoft.playwright.*;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.testng.Assert;
+import org.testng.annotations.Test;
 import srg.CucumberRunner;
 import srg.TestSetup;
 import srg.playwright.custom.CommonOperation;
@@ -46,6 +47,17 @@ public class Steps {
         System.out.println("Yeah I am able logged in.");
     }
 
+    @Test
+    public void runGetRequest(){
+        try(Playwright pw = Playwright.create()){
+            APIRequestContext request = pw.request().newContext();
+            APIResponse response = request.get("https://jsonplaceholder.typicode.com/posts");
+            if(response.ok()){
+                System.out.println(response.body().toString());
+            }
+        }
+
+    }
 
 
 }

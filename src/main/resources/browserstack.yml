@@ -6,14 +6,14 @@ platforms:
   #    os: OS X
   #    osVersion: Big Sur
   #    browserVersion: latest
-  - browserName: playwright-webkit
-    os: OS X
-    osVersion: Ventura
-    browserVersion: 18
-#  - browserName: playwright-firefox
-#    os: Windows
-#    osVersion: 11
-#    browserVersion: 130
+#  - browserName: playwright-webkit
+#    os: OS X
+#    osVersion: Ventura
+#    browserVersion: 18
+  - browserName: playwright-firefox
+    os: Windows
+    osVersion: 11
+    browserVersion: 130
 #  - browserName: chrome
 #    osVersion: 11.0
 #    deviceName: Xiaomi Redmi Note 11
